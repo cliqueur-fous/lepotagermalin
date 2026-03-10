@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Le Potager Malin — Ton assistant potager gratuit. Sais quand semer, planter et récolter. Planifie ta parcelle et découvre les bonnes associations.">
+  <meta name="theme-color" content="#00b894">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>🌱 Le Potager Malin — Quand planter, semer, récolter</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <span class="logo-icon">🌱</span> Le Potager Malin
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-page="dashboard">📋 Aujourd'hui</button>
+    <button class="tab" data-page="selection">🌱 Mon Potager <span class="tab-badge" id="navCount">0</span></button>
+    <button class="tab" data-page="calendar">📅 Calendrier</button>
+    <button class="tab" data-page="encyclo">📖 Plantes</button>
+    <button class="tab" data-page="planner">🗺️ Planificateur</button>
+    <button class="tab" data-page="journal">📝 Journal</button>
+  </div>
+</nav>
+
+<!-- ═══════ DASHBOARD ═══════ -->
+<div class="page active" id="page-dashboard">
+  <div class="welcome">
+    <h1>🌱 Le Potager Malin</h1>
+    <div class="date" id="todayDate"></div>
+    <div class="subtitle">Ton assistant potager — simple, gratuit, sans prise de tête</div>
+  </div>
+  <div id="weatherWidget"></div>
+  <div id="dashContent"></div>
+</div>
+
+<!-- ═══════ SELECTION ═══════ -->
+<div class="page" id="page-selection">
+  <div class="section-header">
+    <h2>🌱 Mon Potager</h2>
+    <p>Clique pour sélectionner tes plantes</p>
+  </div>
+  <div id="selContent"></div>
+</div>
+
+<div class="selection-bar" id="selBar">
+  <div class="sel-info" id="selInfo">0 plantes</div>
+  <button class="sel-go" onclick="goTo('dashboard')">📋 Mon programme →</button>
+</div>
+
+<!-- ═══════ CALENDAR ═══════ -->
+<div class="page" id="page-calendar">
+  <div class="section-header">
+    <h2>📅 Calendrier annuel</h2>
+    <p>Mois par mois, avec précision début/fin de mois</p>
+  </div>
+  <div class="cal-grid" id="calGrid"></div>
+</div>
+
+<!-- ═══════ ENCYCLOPEDIA ═══════ -->
+<div class="page" id="page-encyclo">
+  <div class="section-header">
+    <h2>📖 Toutes les plantes</h2>
+    <p>52 plantes avec calendrier, espacement et associations</p>
+  </div>
+  <div class="e-filters">
+    <div class="filter-group"><span class="flabel">Type</span>
+      <button class="chip active" data-ecat="all">🌍 Tout</button>
+      <button class="chip" data-ecat="legume">🥬 Légumes</button>
+      <button class="chip" data-ecat="fruit">🍓 Fruits</button>
+      <button class="chip" data-ecat="aromate">🌿 Aromates</button>
+    </div>
+    <div class="filter-group"><span class="flabel">Ce mois</span>
+      <button class="chip" data-eaction="sow">🌰 Semis</button>
+      <button class="chip" data-eaction="plant">🌱 Plant.</button>
+      <button class="chip" data-eaction="harvest">🧺 Récolte</button>
+    </div>
+    <div class="filter-group"><span class="flabel">Niveau</span>
+      <button class="chip" data-ediff="easy">😎</button>
+      <button class="chip" data-ediff="medium">💪</button>
+      <button class="chip" data-ediff="hard">🔥</button>
+    </div>
+    <input type="text" class="e-search" id="eSearch" placeholder="🔍 Rechercher...">
+  </div>
+  <div class="e-legend">
+    <span><span class="e-dot" style="background:var(--sow)"></span>Semis</span>
+    <span><span class="e-dot" style="background:var(--plant)"></span>Plantation</span>
+    <span><span class="e-dot" style="background:var(--harvest)"></span>Récolte</span>
+    <span>🟢 = maintenant</span>
+  </div>
+  <div class="e-results" id="eResults"></div>
+  <div class="e-grid" id="eGrid"></div>
+</div>
+
+<!-- ═══════ PLANNER ═══════ -->
+<div class="page" id="page-planner">
+  <div class="section-header">
+    <h2>🗺️ Planificateur de parcelle</h2>
+    <p>Dimensions, associations, espacement et rendement estimé</p>
+  </div>
+  <div id="plannerContent"></div>
+</div>
+
+<!-- ═══════ JOURNAL ═══════ -->
+<div class="page" id="page-journal">
+  <div class="section-header">
+    <h2>📝 Journal de bord</h2>
+    <p>Note tes actions, suis tes récoltes et ton historique</p>
+  </div>
+  <div id="journalContent"></div>
+</div>
+
+<footer>
+  <strong>🌱 Le Potager Malin</strong> — lepotagermalin.fr<br>
+  Calendrier basé sur le climat tempéré français (zone médiane) · Adapte selon ta région !<br>
+  Données sauvegardées dans ton navigateur · Aucune inscription requise<br>
+  <span style="opacity:.5">Fait avec 💚 par Les Jardiniers du 94</span>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/selection.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/encyclopedia.js"></script>
+<script src="js/planner.js"></script>
+<script src="js/journal.js"></script>
+</body>
+</html>
