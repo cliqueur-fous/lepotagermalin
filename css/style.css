@@ -178,7 +178,7 @@ nav{background:linear-gradient(135deg,#1a2e1a 0%,#2d4a2d 100%);color:#fff;displa
 .cat-title{font-size:1rem;font-weight:900;margin-bottom:10px;padding-bottom:6px;border-bottom:3px solid var(--accent);display:inline-block}
 .cat-count{font-weight:600;font-size:.75rem;color:var(--muted);margin-left:6px}
 
-.plant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}
+.plant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px;align-items:start}
 .plant-chip{background:#fff;border:2px solid rgba(26,46,26,.1);border-radius:14px;padding:12px 8px;cursor:pointer;transition:all .2s ease;text-align:center;user-select:none}
 .plant-chip:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 12px rgba(46,204,113,.12)}
 .plant-chip.selected{border-color:var(--sel-border);background:var(--sel-bg);box-shadow:0 0 0 3px rgba(243,156,18,.12)}
@@ -380,10 +380,16 @@ footer a:hover{text-decoration:underline}
   .qh-input,
   select,input[type="text"],input[type="number"],input[type="date"],textarea{font-size:16px!important}
 
-  .plant-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+  .plant-grid{grid-template-columns:repeat(2,1fr);gap:8px}
   .plant-chip{padding:10px 6px}
   .plant-chip .p-emoji{font-size:1.5rem}
   .plant-chip .p-name{font-size:.74rem}
+  /* Inventory controls — reorganized on mobile */
+  .p-inv-control{display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;gap:2px 4px;align-items:center;justify-items:center;width:100%}
+  .p-inv-control .inv-btn:first-child{grid-column:1;grid-row:1}
+  .p-inv-control .inv-qty-input{grid-column:2;grid-row:1;width:42px}
+  .p-inv-control .inv-btn:last-child{grid-column:3;grid-row:1}
+  .inv-qty-unit{grid-column:1/-1;grid-row:2;font-size:.56rem;text-align:center}
   .task-list{grid-template-columns:1fr}
   .cal-grid{grid-template-columns:1fr}
   .e-grid{grid-template-columns:1fr}
@@ -483,7 +489,7 @@ footer a:hover{text-decoration:underline}
   .j-action-btns{gap:4px}
   .j-action-btn{padding:6px 8px;font-size:.65rem}
   .j-stats{grid-template-columns:1fr}
-  .plant-grid{grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px}
+  .plant-grid{grid-template-columns:repeat(2,1fr);gap:6px}
   .dash-stats{gap:6px}
   .dash-stat{padding:8px 10px;font-size:.78rem}
   .gb-name{font-size:.78rem}
