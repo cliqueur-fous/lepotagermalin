@@ -10,38 +10,53 @@ function renderSel() {
     { k: 'aromate', l: '🌿 Aromates', items: PLANTS.filter(p => p.c === 'aromate') },
   ];
 
-  // Shopping list: plants selected but not in inventory
-  const missing = myG.filter(id => !hasInInventory(id));
-  const owned = myG.filter(id => hasInInventory(id));
-
   let h = `<div class="sel-actions">
     <button class="btn btn-secondary" onclick="selPop()">⚡ Sélection express</button>
     <button class="btn btn-secondary" onclick="selAll()">✅ Tout sélectionner</button>
     ${myG.length ? `<button class="btn btn-danger" onclick="clearAll()">🗑️ Tout vider</button>` : ''}
   </div>`;
 
-  // Inventory summary
+  // Inventory summary with real quantities
   if (myG.length) {
+    const selPlants = myG.map(id => plantById(id)).filter(Boolean);
+    const itemsWithRec = selPlants.filter(p => RECOMMENDED_QTY[p.id]);
+    let toBuy = [];
+
+    itemsWithRec.forEach(p => {
+      const rec = RECOMMENDED_QTY[p.id];
+      const owned = getInventoryQty(p.id);
+      if (owned < rec.qty) {
+        toBuy.push({ p, rec, owned, missing: rec.qty - owned });
+      }
+    });
+
+    const completePct = itemsWithRec.length
+      ? Math.round((itemsWithRec.length - toBuy.length) / itemsWithRec.length * 100)
+      : 0;
+
     h += `<div class="inv-summary">
       <div class="inv-header">
         <h3>🌰 Inventaire graines & plants</h3>
-        <span class="inv-count">${owned.length}/${myG.length} en stock</span>
+        <span class="inv-count">${completePct}% complet</span>
       </div>
-      <div class="inv-bar"><div class="inv-bar-fill" style="width:${myG.length ? Math.round(owned.length/myG.length*100) : 0}%"></div></div>
-      ${missing.length ? `<div class="inv-missing">
-        <div class="inv-missing-title">🛒 Liste de courses — ${missing.length} à acheter :</div>
-        <div class="inv-missing-list">${missing.map(id => {
-          const p = plantById(id);
-          if (!p) return '';
-          const rq = RECOMMENDED_QTY[id];
+      <div class="inv-bar"><div class="inv-bar-fill" style="width:${completePct}%"></div></div>`;
+
+    if (toBuy.length) {
+      h += `<div class="inv-missing">
+        <div class="inv-missing-title">🛒 Liste de courses — ${toBuy.length} à compléter :</div>
+        <div class="inv-missing-list">${toBuy.map(({ p, rec, owned, missing }) => {
           return `<div class="inv-missing-item">
             <span>${p.e} ${p.n}</span>
-            ${rq ? `<span class="inv-missing-qty">${rq.qty} ${rq.unit}</span>` : ''}
-            <button class="inv-check-btn" onclick="event.stopPropagation();toggleInventory('${id}');renderSel()" title="J'ai !">✅</button>
+            <span class="inv-missing-qty">${missing} ${rec.unit}${owned > 0 ? ` (${owned}/${rec.qty} en stock)` : ''}</span>
+            <button class="inv-check-btn" onclick="event.stopPropagation();setInventoryQty('${p.id}',${rec.qty});renderSel()" title="J'ai tout !">✅</button>
           </div>`;
         }).join('')}</div>
-      </div>` : `<div class="inv-complete">✅ Tu as tout en stock !</div>`}
-    </div>`;
+      </div>`;
+    } else if (itemsWithRec.length) {
+      h += `<div class="inv-complete">✅ Tu as tout en stock !</div>`;
+    }
+
+    h += `</div>`;
   }
 
   cats.forEach(cat => {
@@ -55,15 +70,20 @@ function renderSel() {
         if (inR(p.plant, NOW_H)) acts.push('🌱');
         if (inR(p.harvest, NOW_H)) acts.push('🧺');
         const rq = RECOMMENDED_QTY[p.id];
-        const inInv = hasInInventory(p.id);
+        const owned = getInventoryQty(p.id);
         return `<div class="plant-chip ${sel ? 'selected' : ''}" onclick="toggle('${p.id}');renderSel()">
           <div class="p-emoji">${p.e}</div>
           <div class="p-name">${sel ? '✅ ' : ''}${p.n}</div>
           <div class="p-diff ${p.d}">${DL[p.d]}</div>
           ${rq ? `<div class="p-qty">📦 ${rq.qty} ${rq.unit}</div>` : ''}
           ${acts.length ? `<div class="p-status">${acts.join(' ')} actif</div>` : ''}
-          ${sel ? `<div class="p-inv-toggle ${inInv ? 'owned' : ''}" onclick="event.stopPropagation();toggleInventory('${p.id}');renderSel()">
-            ${inInv ? '🌰 En stock' : '🛒 Pas en stock'}
+          ${sel && rq ? `<div class="p-inv-control" onclick="event.stopPropagation()">
+            <button class="inv-btn" onclick="invAdjust('${p.id}',-1)">−</button>
+            <input type="number" class="inv-qty-input" value="${owned}" min="0"
+              onchange="setInventoryQty('${p.id}',this.value);renderSel()"
+              onclick="this.select()">
+            <span class="inv-qty-unit">/ ${rq.qty}</span>
+            <button class="inv-btn" onclick="invAdjust('${p.id}',1)">+</button>
           </div>` : ''}
         </div>`;
       }).join('')}</div>
@@ -72,6 +92,12 @@ function renderSel() {
 
   c.innerHTML = h;
   updCounts();
+}
+
+function invAdjust(plantId, delta) {
+  const current = getInventoryQty(plantId);
+  setInventoryQty(plantId, Math.max(0, current + delta));
+  renderSel();
 }
 
 function selPop() {

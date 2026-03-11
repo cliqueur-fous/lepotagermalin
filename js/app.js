@@ -39,7 +39,15 @@ function plantById(id) {
 // ═══════ STATE ═══════
 let myG = JSON.parse(localStorage.getItem('lpm-garden') || '[]');
 let stages = JSON.parse(localStorage.getItem('lpm-stages') || '{}');
-let inventory = JSON.parse(localStorage.getItem('lpm-inventory') || '[]');
+// inventory = { "tomate": 5, "basilic": 3, ... } — qty owned per plant
+let inventory = JSON.parse(localStorage.getItem('lpm-inventory') || '{}');
+// Migrate old array format → object
+if (Array.isArray(inventory)) {
+  const obj = {};
+  inventory.forEach(id => { obj[id] = 1; });
+  inventory = obj;
+  localStorage.setItem('lpm-inventory', JSON.stringify(inventory));
+}
 let _syncTimer = null;
 let gardenCode = localStorage.getItem('lpm-code') || '';
 
@@ -60,16 +68,20 @@ function setStage(plantId, stage, date) {
 function getPlantStage(plantId) { return stages[plantId] || {}; }
 
 // ═══════ INVENTORY — Inventaire graines/plants ═══════
-// inventory = ["tomate", "basilic", ...] — IDs of plants we have seeds/plants for
+// inventory = { "tomate": 5, "basilic": 3, ... } — qty owned per plant
 function getInventory() { return inventory; }
-function toggleInventory(plantId) {
-  const i = inventory.indexOf(plantId);
-  if (i === -1) { inventory.push(plantId); showToast('Graine/plant ajouté à l\'inventaire', 'success'); }
-  else { inventory.splice(i, 1); showToast('Retiré de l\'inventaire'); }
+function setInventoryQty(plantId, qty) {
+  qty = parseFloat(qty) || 0;
+  if (qty <= 0) {
+    delete inventory[plantId];
+  } else {
+    inventory[plantId] = qty;
+  }
   localStorage.setItem('lpm-inventory', JSON.stringify(inventory));
   syncToServer();
 }
-function hasInInventory(plantId) { return inventory.includes(plantId); }
+function getInventoryQty(plantId) { return inventory[plantId] || 0; }
+function hasInInventory(plantId) { return (inventory[plantId] || 0) > 0; }
 
 // ═══════ EXPORT / IMPORT ═══════
 function exportGardenData() {
@@ -102,7 +114,12 @@ function importGardenData(file) {
       if (Array.isArray(data.journal)) { localStorage.setItem('lpm-journal', JSON.stringify(data.journal)); if (typeof journal !== 'undefined') journal = data.journal; }
       if (data.tasks) localStorage.setItem('lpm-tasks', JSON.stringify(data.tasks));
       if (data.stages) { stages = data.stages; localStorage.setItem('lpm-stages', JSON.stringify(stages)); }
-      if (Array.isArray(data.inventory)) { inventory = data.inventory; localStorage.setItem('lpm-inventory', JSON.stringify(inventory)); }
+      if (data.inventory && typeof data.inventory === 'object' && !Array.isArray(data.inventory)) {
+        inventory = data.inventory; localStorage.setItem('lpm-inventory', JSON.stringify(inventory));
+      } else if (Array.isArray(data.inventory)) {
+        inventory = {}; data.inventory.forEach(id => { inventory[id] = 1; });
+        localStorage.setItem('lpm-inventory', JSON.stringify(inventory));
+      }
       syncToServer();
       updCounts();
       goTo('dashboard');
@@ -126,7 +143,7 @@ function syncToServer() {
     const j = JSON.parse(localStorage.getItem('lpm-journal') || '[]');
     const t = JSON.parse(localStorage.getItem('lpm-tasks') || '{}');
     const s = JSON.parse(localStorage.getItem('lpm-stages') || '{}');
-    const inv = JSON.parse(localStorage.getItem('lpm-inventory') || '[]');
+    const inv = JSON.parse(localStorage.getItem('lpm-inventory') || '{}');
     fetch(`/api/garden/${gardenCode}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -155,9 +172,12 @@ function syncFromServer() {
         stages = data.stages;
         localStorage.setItem('lpm-stages', JSON.stringify(data.stages));
       }
-      if (Array.isArray(data.inventory)) {
+      if (data.inventory && typeof data.inventory === 'object' && !Array.isArray(data.inventory)) {
         inventory = data.inventory;
         localStorage.setItem('lpm-inventory', JSON.stringify(data.inventory));
+      } else if (Array.isArray(data.inventory)) {
+        inventory = {}; data.inventory.forEach(id => { inventory[id] = 1; });
+        localStorage.setItem('lpm-inventory', JSON.stringify(inventory));
       }
       updCounts();
     })
@@ -237,7 +257,12 @@ function joinGarden() {
       }
       if (data.tasks) localStorage.setItem('lpm-tasks', JSON.stringify(data.tasks));
       if (data.stages) { stages = data.stages; localStorage.setItem('lpm-stages', JSON.stringify(data.stages)); }
-      if (Array.isArray(data.inventory)) { inventory = data.inventory; localStorage.setItem('lpm-inventory', JSON.stringify(data.inventory)); }
+      if (data.inventory && typeof data.inventory === 'object' && !Array.isArray(data.inventory)) {
+        inventory = data.inventory; localStorage.setItem('lpm-inventory', JSON.stringify(data.inventory));
+      } else if (Array.isArray(data.inventory)) {
+        inventory = {}; data.inventory.forEach(id => { inventory[id] = 1; });
+        localStorage.setItem('lpm-inventory', JSON.stringify(inventory));
+      }
       hideGardenSetup();
       showToast(`Connecte a "${data.name || 'Jardin'}" !`, 'success');
     })
@@ -264,9 +289,9 @@ function leaveGarden() {
   localStorage.setItem('lpm-journal', '[]');
   localStorage.setItem('lpm-tasks', '{}');
   localStorage.setItem('lpm-stages', '{}');
-  localStorage.setItem('lpm-inventory', '[]');
+  localStorage.setItem('lpm-inventory', '{}');
   stages = {};
-  inventory = [];
+  inventory = {};
   if (typeof journal !== 'undefined') journal = [];
   showGardenSetup();
 }

@@ -424,8 +424,13 @@ footer a:hover{text-decoration:underline}
 .inv-complete{text-align:center;font-weight:800;font-size:.88rem;color:var(--accent-dark);padding:8px}
 
 .p-qty{font-size:.6rem;font-weight:700;color:var(--muted);margin-top:2px}
-.p-inv-toggle{font-size:.58rem;font-weight:700;padding:3px 6px;border-radius:6px;margin-top:3px;cursor:pointer;transition:.2s;background:rgba(231,76,60,.08);color:#922b21}
-.p-inv-toggle.owned{background:rgba(46,204,113,.1);color:#1a5e2a}
+.p-inv-control{display:flex;align-items:center;gap:3px;margin-top:4px;justify-content:center}
+.inv-btn{width:24px;height:24px;border:2px solid rgba(26,46,26,.12);background:#fff;border-radius:8px;font-size:.9rem;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;color:var(--text);line-height:1;padding:0}
+.inv-btn:hover{border-color:var(--accent);background:var(--accent-light)}
+.inv-qty-input{width:38px;text-align:center;border:2px solid rgba(26,46,26,.12);border-radius:8px;font-family:inherit;font-weight:800;font-size:.78rem;padding:3px 2px;outline:none;transition:border-color .2s;-moz-appearance:textfield}
+.inv-qty-input::-webkit-outer-spin-button,.inv-qty-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.inv-qty-input:focus{border-color:var(--accent)}
+.inv-qty-unit{font-size:.62rem;font-weight:700;color:var(--muted)}
 
 /* ═══════ HARVEST STATS ═══════ */
 .harvest-stats{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:16px}
