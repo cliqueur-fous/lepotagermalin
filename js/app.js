@@ -38,10 +38,50 @@ function plantById(id) {
 
 // ═══════ STATE ═══════
 let myG = JSON.parse(localStorage.getItem('lpm-garden') || '[]');
+let _syncTimer = null;
 
 function save() {
   localStorage.setItem('lpm-garden', JSON.stringify(myG));
   updCounts();
+  syncToServer();
+}
+
+// ═══════ CLOUD SYNC ═══════
+function syncToServer() {
+  clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(() => {
+    const journal = JSON.parse(localStorage.getItem('lpm-journal') || '[]');
+    const tasks = JSON.parse(localStorage.getItem('lpm-tasks') || '{}');
+    fetch('/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ garden: myG, journal, tasks })
+    }).catch(() => {});
+  }, 500);
+}
+
+function syncFromServer() {
+  return fetch('/api/data')
+    .then(r => r.json())
+    .then(data => {
+      if (Array.isArray(data.garden) && data.garden.length) {
+        myG = data.garden;
+        localStorage.setItem('lpm-garden', JSON.stringify(myG));
+      }
+      if (Array.isArray(data.journal) && data.journal.length) {
+        // Merge: server wins if more entries
+        const local = JSON.parse(localStorage.getItem('lpm-journal') || '[]');
+        if (data.journal.length >= local.length) {
+          localStorage.setItem('lpm-journal', JSON.stringify(data.journal));
+          if (typeof journal !== 'undefined') journal = data.journal;
+        }
+      }
+      if (data.tasks && Object.keys(data.tasks).length) {
+        localStorage.setItem('lpm-tasks', JSON.stringify(data.tasks));
+      }
+      updCounts();
+    })
+    .catch(() => {});
 }
 
 function toggle(id) {
@@ -92,10 +132,24 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => goTo(tab.dataset.page));
   });
-  updCounts();
-  renderDash();
+  // Load from server first, then render
+  syncFromServer().then(() => {
+    updCounts();
+    renderDash();
+  });
   loadWeather();
   registerSW();
+
+  // Re-sync when user comes back to the tab
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      syncFromServer().then(() => {
+        updCounts();
+        if (currentPage === 'dashboard') renderDash();
+        else if (currentPage === 'journal') renderJournal();
+      });
+    }
+  });
 });
 
 // ═══════ TOAST NOTIFICATIONS ═══════

@@ -8,6 +8,7 @@ function getCheckedTasks() {
 }
 function saveCheckedTasks(data) {
   localStorage.setItem('lpm-tasks', JSON.stringify(data));
+  syncToServer();
 }
 function todayKey() {
   return TODAY.toISOString().slice(0, 10);

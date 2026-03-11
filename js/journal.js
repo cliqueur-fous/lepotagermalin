@@ -17,6 +17,7 @@ const J_ACTIONS = {
 
 function saveJournal() {
   localStorage.setItem('lpm-journal', JSON.stringify(journal));
+  syncToServer();
 }
 
 function renderJournal() {
