@@ -9,7 +9,7 @@
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(0,184,148,.25)}50%{box-shadow:0 0 0 8px rgba(0,184,148,0)}}
 
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
   --bg:#f0f4e8;--card:#fff;--text:#1a2e1a;--muted:#5a6e5a;
   --accent:#2ecc71;--accent-dark:#27ae60;--accent-light:#d5f5e3;
@@ -17,7 +17,8 @@
   --warn:#e74c3c;--sel-bg:#fef9e7;--sel-border:#f39c12;
   --radius:16px;--shadow:0 2px 12px rgba(0,0,0,.06);--shadow-lg:0 8px 32px rgba(0,0,0,.1);
 }
-body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 
 /* ═══════ TOAST ═══════ */
 .toast-container{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
@@ -357,43 +358,125 @@ footer a:hover{text-decoration:underline}
 
 /* ═══════ RESPONSIVE ═══════ */
 @media(max-width:768px){
-  /* Mobile bottom nav */
-  nav{position:fixed;bottom:0;top:auto;left:0;right:0;flex-direction:column;padding:0;box-shadow:0 -2px 20px rgba(0,0,0,.12);gap:0;border-radius:16px 16px 0 0;overflow:hidden}
+  /* Mobile bottom nav with safe area for notched phones */
+  nav{position:fixed;bottom:0;top:auto;left:0;right:0;flex-direction:column;padding:0;box-shadow:0 -2px 20px rgba(0,0,0,.12);gap:0;border-radius:16px 16px 0 0;overflow:hidden;padding-bottom:env(safe-area-inset-bottom,0)}
   .logo{display:none}
   .tabs{width:100%;justify-content:space-around;gap:0;padding:6px 4px 8px}
-  .tab{flex:1;text-align:center;border-radius:12px;padding:8px 4px;font-size:.68rem;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}
-  body{padding-top:0;padding-bottom:70px}
+  .tab{flex:1;text-align:center;border-radius:12px;padding:10px 4px;font-size:.68rem;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2;min-height:44px;justify-content:center}
+  body{padding-top:0;padding-bottom:calc(70px + env(safe-area-inset-bottom,0))}
 
-  .plant-grid{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+  /* Dark mode toggle repositioned on mobile */
+  .dark-toggle{position:fixed;top:12px;right:12px;z-index:300;background:rgba(26,46,26,.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+  html.dark .dark-toggle{background:rgba(36,36,66,.8)}
+
+  /* Prevent iOS zoom on input focus — inputs must be >= 16px */
+  .j-form-row input[type="date"],
+  .j-form-row input[type="number"],
+  .j-form-row select,
+  .j-form-row textarea,
+  .j-filters select,
+  .e-search,
+  .gs-input,
+  .qh-input,
+  select,input[type="text"],input[type="number"],input[type="date"],textarea{font-size:16px!important}
+
+  .plant-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px}
+  .plant-chip{padding:10px 6px}
+  .plant-chip .p-emoji{font-size:1.5rem}
+  .plant-chip .p-name{font-size:.74rem}
   .task-list{grid-template-columns:1fr}
   .cal-grid{grid-template-columns:1fr}
   .e-grid{grid-template-columns:1fr}
+  .e-card{padding:14px 12px}
   .e-filters{flex-direction:column;align-items:stretch}
   .hbar .hc{height:10px}
   .page{padding:12px 10px}
   .stat-summary{flex-direction:column}
   .stat-big{min-width:unset}
-  .weather-card{flex-direction:column}
-  .w-forecast{min-width:unset;width:100%}
+
+  /* Weather responsive */
+  .weather-card{flex-direction:column;padding:14px 12px}
+  .w-forecast{min-width:unset;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .w-forecast-day{min-width:60px;padding:8px 8px}
+  .w-current{min-width:unset}
+
+  /* Journal form responsive */
   .j-form-row{flex-direction:column;align-items:stretch}
   .j-form-row label{min-width:unset}
-  .j-stats{flex-direction:column}
-  .j-stat{min-width:unset}
+  .j-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .j-stat{min-width:unset;padding:10px 12px}
+  .j-stat-num{font-size:1.2rem}
+
+  /* Action buttons — bigger touch targets on mobile */
+  .j-action-btns{gap:6px}
+  .j-action-btn{padding:8px 12px;font-size:.72rem;min-height:40px;display:flex;align-items:center}
+
+  /* Photo entries full width on mobile */
+  .j-entry{padding:10px;gap:8px}
+  .j-entry-photo img{width:100%;height:auto;max-height:200px;border-radius:8px}
+  .j-entry-date{min-width:42px;font-size:.72rem}
+  .j-entry-body{min-width:0}
+
+  /* Photo input bigger on mobile */
+  .j-photo-btn{padding:12px 16px;font-size:.85rem;min-height:44px;display:flex;align-items:center;justify-content:center}
+
   .welcome{border-radius:0;margin:-12px -10px 16px}
-  .selection-bar{bottom:60px}
-  .toast-container{bottom:130px}
+  .selection-bar{bottom:calc(60px + env(safe-area-inset-bottom,0))}
+  .toast-container{bottom:calc(130px + env(safe-area-inset-bottom,0))}
+
+  /* Stages tracker */
   .stages-header{flex-direction:column;align-items:flex-start}
   .stage-plant{flex-direction:column;align-items:flex-start}
   .stage-plant-info{min-width:unset}
+  .stage-step{padding:6px 12px;font-size:.72rem;min-height:36px;display:inline-flex;align-items:center}
+
+  /* Harvest stats */
   .harvest-bar-label{min-width:70px;font-size:.7rem}
   .harvest-bar-value{min-width:45px;font-size:.68rem}
+
+  /* Inventory */
   .inv-missing-item{font-size:.75rem}
+
+  /* Garden bar */
   .gb-actions{flex-wrap:wrap}
+  .gb-btn{padding:8px 14px;font-size:.74rem;min-height:38px}
+  .gb-code{font-size:.78rem;padding:6px 10px}
+  .garden-bar{padding:10px 12px}
+
+  /* Recommendations */
   .reco-item{flex-wrap:wrap}
   .reco-plant{min-width:unset}
   .reco-qty{min-width:unset}
   .qh-form{flex-direction:column}
   .qh-form select,.qh-input{width:100%}
+
+  /* Filters bigger touch targets */
+  .chip{padding:7px 12px;font-size:.74rem;min-height:36px;display:inline-flex;align-items:center}
+  .e-legend{font-size:.68rem;gap:8px}
+
+  /* Lightbox better on mobile */
+  .j-lightbox{padding:10px}
+  .j-lightbox img{max-width:95vw;max-height:80vh;border-radius:12px}
+
+  /* Save warning responsive */
+  .save-warning-card{padding:24px 20px;margin:0 10px}
+  .save-warning-code{font-size:1.6rem;letter-spacing:4px}
+
+  /* Garden setup responsive */
+  .gs-card{padding:28px 20px;border-radius:20px}
+}
+
+/* ═══════ VERY SMALL SCREENS (< 380px) ═══════ */
+@media(max-width:380px){
+  .tab{font-size:.6rem;padding:8px 2px}
+  .j-action-btns{gap:4px}
+  .j-action-btn{padding:6px 8px;font-size:.65rem}
+  .j-stats{grid-template-columns:1fr}
+  .plant-grid{grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px}
+  .dash-stats{gap:6px}
+  .dash-stat{padding:8px 10px;font-size:.78rem}
+  .gb-name{font-size:.78rem}
+  .w-forecast-day{min-width:55px;padding:6px}
 }
 
 .muted{color:var(--muted);font-size:.82rem}
@@ -546,11 +629,15 @@ footer a:hover{text-decoration:underline}
 .j-filter-photo-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
 .j-filter-photo-btn.hidden{display:none}
 
-.j-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;cursor:pointer;animation:fadeIn .2s ease}
-.j-lightbox img{max-width:90vw;max-height:85vh;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.4);object-fit:contain}
+.j-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;cursor:pointer;animation:fadeIn .2s ease;-webkit-tap-highlight-color:transparent}
+.j-lightbox img{max-width:90vw;max-height:85vh;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.4);object-fit:contain;user-select:none;-webkit-user-select:none}
+.j-lightbox-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:none;color:#fff;font-size:1.6rem;width:44px;height:44px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;z-index:1}
+.j-lightbox-close:hover{background:rgba(255,255,255,.3)}
 
 @media(max-width:768px){
   .j-entry-photo img{width:100%;height:auto;max-height:200px}
+  .j-photo-preview{margin-top:8px}
+  .j-photo-thumb img{max-width:100%;height:auto;max-height:160px}
 }
 
 /* ═══════ DARK MODE TOGGLE ═══════ */

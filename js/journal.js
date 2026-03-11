@@ -320,9 +320,11 @@ function togglePhotoFilter(btn) {
 function openPhotoLightbox(url) {
   const overlay = document.createElement('div');
   overlay.className = 'j-lightbox';
-  overlay.onclick = () => overlay.remove();
-  overlay.innerHTML = `<img src="${url}" alt="Photo journal">`;
+  overlay.onclick = (e) => { if (e.target === overlay || e.target.classList.contains('j-lightbox-close')) overlay.remove(); };
+  overlay.innerHTML = `<button class="j-lightbox-close" aria-label="Fermer">×</button><img src="${url}" alt="Photo journal">`;
   document.body.appendChild(overlay);
+  const esc = (e) => { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', esc); } };
+  document.addEventListener('keydown', esc);
 }
 
 function renderJournalEntries() {
