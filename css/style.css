@@ -355,6 +355,11 @@ footer a:hover{text-decoration:underline}
   .harvest-bar-value{min-width:45px;font-size:.68rem}
   .inv-missing-item{font-size:.75rem}
   .gb-actions{flex-wrap:wrap}
+  .reco-item{flex-wrap:wrap}
+  .reco-plant{min-width:unset}
+  .reco-qty{min-width:unset}
+  .qh-form{flex-direction:column}
+  .qh-form select,.qh-input{width:100%}
 }
 
 .muted{color:var(--muted);font-size:.82rem}
@@ -436,7 +441,42 @@ footer a:hover{text-decoration:underline}
 .inv-qty-input:focus{border-color:var(--accent)}
 .inv-qty-unit{font-size:.62rem;font-weight:700;color:var(--muted)}
 
-/* ═══════ HARVEST STATS ═══════ */
+/* ═══════ RECO SECTION ═══════ */
+.reco-section{border:2px solid rgba(46,204,113,.15)}
+.reco-list{display:flex;flex-direction:column;gap:4px}
+.reco-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(46,204,113,.04);border-radius:8px;font-size:.8rem}
+.reco-plant{font-weight:800;min-width:100px}
+.reco-qty{font-weight:700;color:var(--accent-dark);min-width:80px}
+.reco-note{font-size:.7rem;color:var(--muted);font-style:italic;flex:1}
+.inv-hint-badge{font-size:.72rem;font-weight:700;color:var(--muted);background:rgba(26,46,26,.06);padding:2px 8px;border-radius:8px}
+
+/* ═══════ INVENTORY OWNED ═══════ */
+.inv-owned{background:rgba(46,204,113,.06);border-radius:12px;padding:12px;margin-top:10px}
+.inv-owned-title{font-weight:800;font-size:.85rem;color:#1a5e2a;margin-bottom:8px}
+.inv-owned-item{background:rgba(46,204,113,.08)}
+.inv-owned-qty{font-size:.78rem;font-weight:800;color:var(--accent-dark)}
+
+/* ═══════ HARVEST RECAP (DASHBOARD) ═══════ */
+.harvest-recap{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:16px}
+.harvest-recap-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.harvest-recap-header h3{font-size:1.05rem;font-weight:900;margin:0}
+.harvest-table{margin-bottom:12px}
+
+.quick-harvest{background:rgba(231,76,60,.04);border:2px solid rgba(231,76,60,.12);border-radius:12px;padding:10px 12px;margin-bottom:14px}
+.qh-title{font-size:.78rem;font-weight:800;color:#922b21;margin-bottom:6px}
+.qh-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.qh-form select{flex:1;min-width:120px;padding:6px 10px;border:2px solid rgba(26,46,26,.1);border-radius:10px;font-family:inherit;font-weight:700;font-size:.78rem;outline:none}
+.qh-input{width:70px;padding:6px 10px;border:2px solid rgba(26,46,26,.1);border-radius:10px;font-family:inherit;font-weight:700;font-size:.82rem;outline:none;text-align:center}
+.qh-form select:focus,.qh-input:focus{border-color:var(--accent)}
+
+.harvest-months{margin-top:10px}
+.harvest-month-bars{display:flex;gap:4px;align-items:flex-end;height:80px;padding-top:4px}
+.hm-bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.hm-fill{width:100%;background:var(--accent);border-radius:4px 4px 0 0;min-height:2px;transition:height .4s ease}
+.hm-label{font-size:.58rem;font-weight:800;color:var(--muted);margin-top:3px;text-transform:uppercase}
+.hm-value{font-size:.58rem;font-weight:700;color:var(--text)}
+
+/* ═══════ HARVEST STATS (JOURNAL) ═══════ */
 .harvest-stats{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:16px}
 .harvest-stats-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
 .harvest-stats-header h3{font-size:1rem;font-weight:900;margin:0}

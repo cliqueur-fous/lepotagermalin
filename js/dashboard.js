@@ -153,6 +153,9 @@ function renderDash() {
     h += '</div>';
   }
 
+  // ═══════ HARVEST RECAP ═══════
+  h += renderDashHarvest(sel, toHarv);
+
   // ═══════ PLANT SECTIONS ═══════
   if (toSow.length) h += dashSection('🌰 À semer', 'sow-title', toSow);
   if (toPlant.length) h += dashSection('🌱 À planter', 'plant-title', toPlant);
@@ -523,6 +526,122 @@ function getSeasonalTasks(month, sel, inGround, beingSown, comingSoon) {
   }
 
   return tasks;
+}
+
+// ═══════ HARVEST RECAP ON DASHBOARD ═══════
+function renderDashHarvest(sel, toHarv) {
+  const j = typeof journal !== 'undefined' ? journal : JSON.parse(localStorage.getItem('lpm-journal') || '[]');
+  const harvestEntries = j.filter(e => e.action === 'harvest' && e.qty > 0);
+  const totalKg = harvestEntries.reduce((s, e) => s + e.qty, 0);
+
+  // By plant
+  const byPlant = {};
+  harvestEntries.forEach(e => {
+    if (!e.plantId) return;
+    if (!byPlant[e.plantId]) byPlant[e.plantId] = { kg: 0, count: 0 };
+    byPlant[e.plantId].kg += e.qty;
+    byPlant[e.plantId].count++;
+  });
+
+  // By month this year
+  const byMonth = {};
+  harvestEntries.filter(e => new Date(e.date).getFullYear() === TODAY.getFullYear()).forEach(e => {
+    const m = new Date(e.date).getMonth();
+    if (!byMonth[m]) byMonth[m] = 0;
+    byMonth[m] += e.qty;
+  });
+
+  const plantRows = Object.entries(byPlant).sort((a, b) => b[1].kg - a[1].kg);
+  const maxKg = plantRows.length ? Math.max(...plantRows.map(([, v]) => v.kg)) : 1;
+
+  let h = `<div class="harvest-recap">
+    <div class="harvest-recap-header">
+      <h3>🧺 Récoltes</h3>
+      <span class="harvest-total">${totalKg ? totalKg.toFixed(1) + ' kg au total' : 'Aucune récolte'}</span>
+    </div>`;
+
+  // Quick harvest form
+  if (toHarv.length) {
+    h += `<div class="quick-harvest">
+      <div class="qh-title">Saisie rapide</div>
+      <div class="qh-form">
+        <select id="qhPlant">
+          ${toHarv.map(p => `<option value="${p.id}">${p.e} ${p.n}</option>`).join('')}
+        </select>
+        <input type="number" id="qhQty" step="0.1" min="0.1" placeholder="kg" class="qh-input">
+        <button class="btn btn-sm-action" onclick="quickHarvest()">🧺 Ajouter</button>
+      </div>
+    </div>`;
+  }
+
+  // Summary table
+  if (plantRows.length) {
+    h += `<div class="harvest-table">`;
+    plantRows.forEach(([id, data]) => {
+      const p = plantById(id);
+      if (!p) return;
+      const pct = Math.round(data.kg / maxKg * 100);
+      h += `<div class="harvest-bar-row">
+        <div class="harvest-bar-label">${p.e} ${p.n}</div>
+        <div class="harvest-bar-track">
+          <div class="harvest-bar-fill" style="width:${pct}%;background:var(--harvest)"></div>
+        </div>
+        <div class="harvest-bar-value">${data.kg.toFixed(1)} kg</div>
+      </div>`;
+    });
+    h += `</div>`;
+
+    // Monthly breakdown
+    const monthKeys = Object.keys(byMonth).sort((a, b) => a - b);
+    if (monthKeys.length) {
+      const maxM = Math.max(...monthKeys.map(m => byMonth[m]));
+      h += `<div class="harvest-months">
+        <div class="harvest-section-title">Par mois (${TODAY.getFullYear()})</div>
+        <div class="harvest-month-bars">`;
+      monthKeys.forEach(m => {
+        const pct = Math.round(byMonth[m] / maxM * 100);
+        h += `<div class="hm-bar">
+          <div class="hm-fill" style="height:${pct}%"></div>
+          <div class="hm-label">${MS[m]}</div>
+          <div class="hm-value">${byMonth[m].toFixed(1)}</div>
+        </div>`;
+      });
+      h += `</div></div>`;
+    }
+  }
+
+  h += `</div>`;
+  return h;
+}
+
+function quickHarvest() {
+  const plantId = document.getElementById('qhPlant')?.value;
+  const qty = parseFloat(document.getElementById('qhQty')?.value);
+  if (!plantId || !qty || qty <= 0) {
+    showToast('Entre une quantité en kg', 'warn');
+    return;
+  }
+
+  // Add to journal
+  if (typeof journal === 'undefined') return;
+  journal.unshift({
+    id: Date.now(),
+    date: TODAY.toISOString().slice(0, 10),
+    plantId,
+    action: 'harvest',
+    note: '',
+    qty,
+  });
+  saveJournal();
+
+  // Auto-update stage
+  const ps = getPlantStage(plantId);
+  if (!ps.harvest) {
+    setStage(plantId, 'harvest', TODAY.toISOString().slice(0, 10));
+  }
+
+  showToast(`${qty} kg ajoutés !`, 'success');
+  renderDash();
 }
 
 // ═══════ EXISTING SECTIONS ═══════

@@ -16,54 +16,84 @@ function renderSel() {
     ${myG.length ? `<button class="btn btn-danger" onclick="clearAll()">🗑️ Tout vider</button>` : ''}
   </div>`;
 
-  // Inventory summary
   if (myG.length) {
     const selPlants = myG.map(id => plantById(id)).filter(Boolean);
     const itemsWithRec = selPlants.filter(p => RECOMMENDED_QTY[p.id]);
-    let toBuy = [];
 
-    itemsWithRec.forEach(p => {
-      const rec = RECOMMENDED_QTY[p.id];
-      const owned = getInventoryQty(p.id);
-      if (owned < rec.qty) {
-        toBuy.push({ p, rec, owned, missing: rec.qty - owned });
-      }
-    });
+    // ═══════ 1. RECOMMANDATIONS (read-only) ═══════
+    if (itemsWithRec.length) {
+      h += `<details class="inv-summary reco-section">
+        <summary class="inv-toggle">
+          <div class="inv-header">
+            <h3>📋 Recommandations pour 2 personnes</h3>
+            <span class="inv-hint-badge">${itemsWithRec.length} plantes</span>
+          </div>
+          <span class="inv-hint">Quantités conseillées par Rustica, Vilmorin, Terre Vivante</span>
+        </summary>
+        <div class="inv-body">
+          <div class="reco-list">${itemsWithRec.map(p => {
+            const rec = RECOMMENDED_QTY[p.id];
+            return `<div class="reco-item">
+              <span class="reco-plant">${p.e} ${p.n}</span>
+              <span class="reco-qty">${rec.qty} ${rec.unit}</span>
+              <span class="reco-note">${rec.note}</span>
+            </div>`;
+          }).join('')}</div>
+        </div>
+      </details>`;
+    }
 
-    const completePct = itemsWithRec.length
-      ? Math.round((itemsWithRec.length - toBuy.length) / itemsWithRec.length * 100)
-      : 0;
+    // ═══════ 2. MON INVENTAIRE (editable) ═══════
+    const invPlants = selPlants.filter(p => getInventoryQty(p.id) > 0);
+    const emptyInv = selPlants.filter(p => getInventoryQty(p.id) === 0);
+    const totalOwned = invPlants.length;
 
-    h += `<details class="inv-summary" ${toBuy.length ? 'open' : ''}>
+    h += `<details class="inv-summary" ${emptyInv.length ? 'open' : ''}>
       <summary class="inv-toggle">
         <div class="inv-header">
-          <h3>🌰 Inventaire & liste de courses</h3>
-          <span class="inv-count">${completePct}% complet</span>
+          <h3>🌰 Mon inventaire</h3>
+          <span class="inv-count">${totalOwned}/${selPlants.length} en stock</span>
         </div>
-        <div class="inv-bar"><div class="inv-bar-fill" style="width:${completePct}%"></div></div>
-        <span class="inv-hint">Quantités recommandées pour 2 personnes (sources : Rustica, Vilmorin)</span>
+        <div class="inv-bar"><div class="inv-bar-fill" style="width:${selPlants.length ? Math.round(totalOwned/selPlants.length*100) : 0}%"></div></div>
+        <span class="inv-hint">Ce que tu as vraiment — modifie les quantités sur chaque plante ci-dessous</span>
       </summary>
       <div class="inv-body">`;
 
-    if (toBuy.length) {
+    // What's missing (0 in stock)
+    if (emptyInv.length) {
       h += `<div class="inv-missing">
-        <div class="inv-missing-title">🛒 ${toBuy.length} plante${toBuy.length > 1 ? 's' : ''} à compléter</div>
-        <div class="inv-missing-list">${toBuy.map(({ p, rec, owned, missing }) => {
+        <div class="inv-missing-title">🛒 ${emptyInv.length} plante${emptyInv.length > 1 ? 's' : ''} sans stock</div>
+        <div class="inv-missing-list">${emptyInv.map(p => {
+          const rq = RECOMMENDED_QTY[p.id];
           return `<div class="inv-missing-item">
             <span>${p.e} ${p.n}</span>
-            <span class="inv-missing-qty">${missing} ${rec.unit}${owned > 0 ? ` (${owned}/${rec.qty})` : ''}</span>
-            <button class="inv-check-btn" onclick="event.stopPropagation();setInventoryQty('${p.id}',${rec.qty});renderSel()" title="J'ai tout !">✅</button>
+            ${rq ? `<span class="inv-missing-qty">reco: ${rq.qty} ${rq.unit}</span>` : ''}
+            <button class="inv-check-btn" onclick="event.stopPropagation();setInventoryQty('${p.id}',${rq ? rq.qty : 1});renderSel()" title="Ajouter la quantité recommandée">➕</button>
           </div>`;
         }).join('')}</div>
       </div>`;
-    } else if (itemsWithRec.length) {
-      h += `<div class="inv-complete">✅ Tu as tout en stock !</div>`;
+    }
+
+    // What we have
+    if (invPlants.length) {
+      h += `<div class="inv-owned">
+        <div class="inv-owned-title">✅ En stock</div>
+        <div class="inv-missing-list">${invPlants.map(p => {
+          const rq = RECOMMENDED_QTY[p.id];
+          const owned = getInventoryQty(p.id);
+          return `<div class="inv-missing-item inv-owned-item">
+            <span>${p.e} ${p.n}</span>
+            <span class="inv-owned-qty">${owned} ${rq ? rq.unit : ''}</span>
+            <button class="inv-check-btn" onclick="event.stopPropagation();setInventoryQty('${p.id}',0);renderSel()" title="Retirer du stock">🗑️</button>
+          </div>`;
+        }).join('')}</div>
+      </div>`;
     }
 
     h += `</div></details>`;
   }
 
-  // Plant grid — simplified cards, inventory only on selected
+  // Plant grid
   cats.forEach(cat => {
     const selCount = cat.items.filter(p => myG.includes(p.id)).length;
     h += `<div class="cat-section">
