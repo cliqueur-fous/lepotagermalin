@@ -4,10 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Le Potager Malin — Ton assistant potager gratuit. Sais quand semer, planter et récolter. Planifie ta parcelle et découvre les bonnes associations.">
-  <meta name="theme-color" content="#00b894">
+  <meta name="theme-color" content="#1a2e1a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>🌱 Le Potager Malin — Quand planter, semer, récolter</title>
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Le Potager Malin — Ton assistant potager gratuit">
+  <meta property="og:description" content="Sais quand semer, planter et récolter. 52 plantes, calendrier personnalisé, associations, journal de bord. 100% gratuit, sans inscription.">
+  <meta property="og:image" content="https://lepotagermalin.fr/og-image.png">
+  <meta property="og:url" content="https://lepotagermalin.fr">
+  <meta property="og:locale" content="fr_FR">
+  <meta property="og:site_name" content="Le Potager Malin">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Le Potager Malin — Ton assistant potager gratuit">
+  <meta name="twitter:description" content="52 plantes, calendrier personnalisé, associations et journal de bord. Gratuit, sans inscription.">
+  <meta name="twitter:image" content="https://lepotagermalin.fr/og-image.png">
+
+  <link rel="canonical" href="https://lepotagermalin.fr">
+
+  <title>Le Potager Malin — Quand planter, semer, récolter</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
@@ -29,6 +47,7 @@
     <button class="tab" data-page="encyclo">📖 Plantes</button>
     <button class="tab" data-page="journal">📝 Journal</button>
   </div>
+  <button class="dark-toggle" onclick="toggleDarkMode()" title="Mode sombre / clair" aria-label="Basculer mode sombre">🌙</button>
 </nav>
 
 <!-- ═══════ DASHBOARD ═══════ -->

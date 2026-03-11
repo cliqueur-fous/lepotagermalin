@@ -524,3 +524,121 @@ footer a:hover{text-decoration:underline}
 .harvest-bar-track{flex:1;height:16px;background:rgba(26,46,26,.05);border-radius:8px;overflow:hidden}
 .harvest-bar-fill{height:100%;border-radius:8px;transition:width .5s ease;min-width:4px}
 .harvest-bar-value{min-width:55px;font-size:.75rem;font-weight:800;color:var(--text)}
+
+/* ═══════ DARK MODE TOGGLE ═══════ */
+.dark-toggle{background:rgba(255,255,255,.1);border:none;padding:6px 10px;border-radius:12px;font-size:1rem;cursor:pointer;transition:.2s;line-height:1}
+.dark-toggle:hover{background:rgba(255,255,255,.2)}
+
+/* ═══════ SAVE CODE WARNING ═══════ */
+.save-warning-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease}
+.save-warning-card{background:#fff;border-radius:24px;padding:32px 28px;max-width:400px;width:100%;text-align:center;box-shadow:var(--shadow-lg)}
+.save-warning-icon{font-size:3rem;margin-bottom:8px}
+.save-warning-card h2{font-size:1.3rem;font-weight:900;margin-bottom:12px}
+.save-warning-code{font-family:monospace;font-size:2rem;font-weight:900;letter-spacing:6px;background:rgba(46,204,113,.1);color:var(--accent-dark);padding:12px 20px;border-radius:14px;margin:12px 0;cursor:pointer;transition:.2s;user-select:all}
+.save-warning-code:hover{background:rgba(46,204,113,.2)}
+.save-warning-card p{font-size:.88rem;color:var(--muted);line-height:1.5;margin-bottom:16px}
+.save-warning-tips{display:flex;flex-direction:column;gap:6px;margin-bottom:20px;text-align:left;font-size:.82rem;font-weight:700}
+.save-warning-tips div{padding:8px 12px;background:rgba(26,46,26,.03);border-radius:10px}
+
+/* ═══════ GARDEN SETUP CITY HINT ═══════ */
+.gs-city-hint{font-size:.72rem;color:var(--muted);font-style:italic;margin:-4px 0 12px;text-align:left}
+
+/* ═══════ WEATHER LOCATION BUTTON ═══════ */
+.w-current{display:flex;align-items:center;gap:10px;flex:1;min-width:200px}
+.w-current-info{display:flex;flex-direction:column;flex:1}
+.w-loc-btn{background:rgba(26,46,26,.05);border:none;padding:6px 10px;border-radius:10px;font-size:.9rem;cursor:pointer;transition:.2s;flex-shrink:0}
+.w-loc-btn:hover{background:rgba(26,46,26,.1)}
+
+/* ═══════ DARK MODE ═══════ */
+html.dark{
+  --bg:#1a1a2e;--card:#242442;--text:#e8e8f0;--muted:#9090a8;
+  --accent:#2ecc71;--accent-dark:#27ae60;--accent-light:rgba(46,204,113,.15);
+  --sow:#f1c40f;--plant:#2ecc71;--harvest:#e74c3c;
+  --warn:#e74c3c;--sel-bg:rgba(243,156,18,.1);--sel-border:#f39c12;
+  --shadow:0 2px 12px rgba(0,0,0,.2);--shadow-lg:0 8px 32px rgba(0,0,0,.3);
+}
+html.dark body{background:var(--bg);color:var(--text)}
+html.dark nav{background:linear-gradient(135deg,#0d1b2a 0%,#1b2838 100%)}
+html.dark .welcome{background:linear-gradient(135deg,#1b2838 0%,#1a2e1a 40%,#2d1f3d 100%)}
+html.dark .e-card,
+html.dark .task-card,
+html.dark .dash-summary,
+html.dark .dash-assoc,
+html.dark .task-checklist,
+html.dark .harvest-recap,
+html.dark .harvest-stats,
+html.dark .stages-tracker,
+html.dark .next-up,
+html.dark .weather-card,
+html.dark .cal-month,
+html.dark .j-form-card,
+html.dark .j-entry,
+html.dark .j-stat,
+html.dark .inv-summary,
+html.dark .garden-bar{background:var(--card);color:var(--text)}
+
+html.dark .e-card.in-garden{background:#2a2a3e;border-color:var(--sel-border)}
+html.dark .cal-month.current{background:#1a2e1a;border-color:var(--accent)}
+html.dark .plant-chip{background:var(--card);border-color:rgba(255,255,255,.08);color:var(--text)}
+html.dark .plant-chip.selected{background:rgba(243,156,18,.08);border-color:var(--sel-border)}
+html.dark .chip{background:var(--card);border-color:rgba(255,255,255,.1);color:var(--text)}
+html.dark .e-search{background:var(--card);border-color:rgba(255,255,255,.1);color:var(--text)}
+html.dark .e-filters{background:var(--card)}
+html.dark .gs-card{background:var(--card);color:var(--text)}
+html.dark .gs-input{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:var(--text)}
+html.dark #gardenSetup{background:linear-gradient(135deg,#0d1b2a 0%,#1a2e1a 40%,#1a1a2e 100%)}
+html.dark .save-warning-card{background:var(--card);color:var(--text)}
+html.dark .save-warning-code{background:rgba(46,204,113,.15)}
+
+html.dark .stage-step{background:var(--card);border-color:rgba(255,255,255,.1);color:var(--text)}
+html.dark .inv-btn{background:var(--card);border-color:rgba(255,255,255,.1);color:var(--text)}
+html.dark .inv-qty-input{background:var(--card);border-color:rgba(255,255,255,.1);color:var(--text)}
+html.dark .inv-missing{background:rgba(241,196,15,.08)}
+html.dark .inv-missing-item{background:rgba(255,255,255,.05)}
+html.dark .inv-owned{background:rgba(46,204,113,.08)}
+html.dark .inv-owned-item{background:rgba(46,204,113,.1)}
+
+html.dark .j-form-row input,
+html.dark .j-form-row select,
+html.dark .j-form-row textarea,
+html.dark .j-filters select{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:var(--text)}
+html.dark .j-month-header{background:rgba(255,255,255,.05)}
+html.dark .j-entry{background:var(--card)}
+
+html.dark .gb-code{background:rgba(46,204,113,.15)}
+html.dark .gb-btn{background:rgba(255,255,255,.06);color:var(--text)}
+html.dark .w-loc-btn{background:rgba(255,255,255,.06)}
+
+html.dark .task-cat-section{border-color:rgba(255,255,255,.06)}
+html.dark .task-cat-header{background:rgba(255,255,255,.03)}
+html.dark .task-check-item{border-color:rgba(255,255,255,.04)}
+
+html.dark .qh-form select,
+html.dark .qh-input{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:var(--text)}
+html.dark .quick-harvest{background:rgba(231,76,60,.06);border-color:rgba(231,76,60,.15)}
+
+html.dark .weather-card.weather-frost{background:#1b2838;border-color:#4a6fa5}
+
+html.dark .empty-state{background:var(--card)}
+html.dark footer{color:var(--muted)}
+
+html.dark .reco-item{background:rgba(46,204,113,.06)}
+html.dark .reco-section{border-color:rgba(46,204,113,.2)}
+
+html.dark .stage-plant{background:rgba(255,255,255,.03)}
+html.dark .e-care{background:rgba(46,204,113,.08)}
+html.dark .e-assoc-good{background:rgba(46,204,113,.06)}
+html.dark .e-assoc-bad{background:rgba(231,76,60,.06)}
+html.dark .dash-assoc-group.bad{background:rgba(231,76,60,.06);border-color:rgba(231,76,60,.15)}
+html.dark .dash-assoc-group.good{background:rgba(46,204,113,.06);border-color:rgba(46,204,113,.15)}
+
+html.dark .e-add{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:var(--text)}
+html.dark .e-add.added{background:rgba(243,156,18,.1);border-color:var(--sel-border)}
+
+html.dark .btn-secondary{background:rgba(255,255,255,.08);color:var(--text)}
+
+html.dark .save-warning-tips div{background:rgba(255,255,255,.05)}
+
+@media(max-width:768px){
+  html.dark .welcome{margin:-12px -10px 16px}
+}
