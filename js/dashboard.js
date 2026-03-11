@@ -55,6 +55,7 @@ function renderDash() {
       </div>
       <div class="gb-actions">
         <button class="gb-btn" onclick="copyGardenCode()">Copier le code</button>
+        <button class="gb-btn" onclick="exportGardenData()">💾 Sauvegarder</button>
         <button class="gb-btn gb-btn-danger" onclick="leaveGarden()">Quitter</button>
       </div>`;
   } else if (gb) { gb.innerHTML = ''; }
@@ -90,6 +91,9 @@ function renderDash() {
       ${!total ? `<div class="dash-stat rest">😴 Rien à faire ce mois-ci</div>` : ''}
     </div>
   </div>`;
+
+  // ═══════ PLANT STAGES TRACKER ═══════
+  h += renderStagesTracker(sel);
 
   // Companion alerts
   const alerts = [];
@@ -159,6 +163,74 @@ function renderDash() {
   c.innerHTML = h;
 }
 
+// ═══════ STAGES TRACKER ═══════
+function renderStagesTracker(sel) {
+  const stageTypes = [
+    { key: 'sow', label: '🌰 Semé', color: 'var(--sow)' },
+    { key: 'plant', label: '🌱 Planté', color: 'var(--plant)' },
+    { key: 'harvest', label: '🧺 Récolté', color: 'var(--harvest)' },
+  ];
+
+  // Count stages
+  let totalStages = 0, doneStages = 0;
+  sel.forEach(p => {
+    const ps = getPlantStage(p.id);
+    if (p.sow.length) { totalStages++; if (ps.sow) doneStages++; }
+    if (p.plant.length) { totalStages++; if (ps.plant) doneStages++; }
+    if (p.harvest.length) { totalStages++; if (ps.harvest) doneStages++; }
+  });
+  const pct = totalStages ? Math.round(doneStages / totalStages * 100) : 0;
+
+  let h = `<div class="stages-tracker">
+    <div class="stages-header">
+      <h3>📊 Suivi de saison</h3>
+      <div class="stages-progress">
+        <div class="stages-progress-bar"><div class="stages-progress-fill" style="width:${pct}%"></div></div>
+        <span class="stages-progress-text">${pct}%</span>
+      </div>
+    </div>
+    <div class="stages-grid">`;
+
+  sel.forEach(p => {
+    const ps = getPlantStage(p.id);
+    const rq = RECOMMENDED_QTY[p.id];
+    h += `<div class="stage-plant">
+      <div class="stage-plant-info">
+        <span class="stage-emoji">${p.e}</span>
+        <span class="stage-name">${p.n}</span>
+        ${rq ? `<span class="stage-qty" title="${rq.note}">📦 ${rq.qty} ${rq.unit}</span>` : ''}
+      </div>
+      <div class="stage-steps">`;
+
+    if (p.sow.length) {
+      const done = ps.sow;
+      h += `<button class="stage-step ${done ? 'done' : ''}" style="${done ? 'background:var(--sow);color:#5a4000' : ''}"
+        onclick="event.stopPropagation();setStage('${p.id}','sow');renderDash()" title="${done ? 'Semé le ' + done + ' — cliquer pour annuler' : 'Marquer comme semé'}">
+        🌰 ${done ? done.slice(5) : 'Semer'}
+      </button>`;
+    }
+    if (p.plant.length) {
+      const done = ps.plant;
+      h += `<button class="stage-step ${done ? 'done' : ''}" style="${done ? 'background:var(--plant);color:#fff' : ''}"
+        onclick="event.stopPropagation();setStage('${p.id}','plant');renderDash()" title="${done ? 'Planté le ' + done + ' — cliquer pour annuler' : 'Marquer comme planté'}">
+        🌱 ${done ? done.slice(5) : 'Planter'}
+      </button>`;
+    }
+    if (p.harvest.length) {
+      const done = ps.harvest;
+      h += `<button class="stage-step ${done ? 'done' : ''}" style="${done ? 'background:var(--harvest);color:#fff' : ''}"
+        onclick="event.stopPropagation();setStage('${p.id}','harvest');renderDash()" title="${done ? 'Récolté le ' + done + ' — cliquer pour annuler' : 'Marquer comme récolté'}">
+        🧺 ${done ? done.slice(5) : 'Récolter'}
+      </button>`;
+    }
+
+    h += `</div></div>`;
+  });
+
+  h += '</div></div>';
+  return h;
+}
+
 // ═══════ TASK GENERATOR — Période-aware ═══════
 
 function generateTasks(sel, toSow, toPlant, toHarv) {
@@ -169,17 +241,13 @@ function generateTasks(sel, toSow, toPlant, toHarv) {
   const isCold = month <= 2 || month >= 10; // nov-mar
 
   // Plants actually in the ground (planted AND been there long enough for care tasks)
-  // A plant is "established" if we're at least 2 half-months into its planting period
   const inGround = sel.filter(p => {
-    if (inR(p.harvest, NOW_H)) return true; // harvesting = definitely in ground
+    if (inR(p.harvest, NOW_H)) return true;
     if (!inR(p.plant, NOW_H)) return false;
-    // Check if we're past the START of planting period (not just beginning)
     const range = p.plant.find(([s, e]) => NOW_H >= s && NOW_H <= e);
-    return range && (NOW_H - range[0]) >= 2; // at least 1 month into planting period
+    return range && (NOW_H - range[0]) >= 2;
   });
-  // Plants currently being sown (not yet in ground, just seeds)
   const beingSown = sel.filter(p => inR(p.sow, NOW_H) && !inR(p.plant, NOW_H));
-  // Plants coming soon (sow or plant starts within next 2 half-months)
   const comingSoon = sel.filter(p => {
     const next1 = NOW_H + 1, next2 = NOW_H + 2;
     return !inR(p.sow, NOW_H) && !inR(p.plant, NOW_H) && !inR(p.harvest, NOW_H)
@@ -187,23 +255,19 @@ function generateTasks(sel, toSow, toPlant, toHarv) {
   });
 
   // ── 1. SEMIS ──
-  // Indoor sowing for serre plants (Feb-Mar-Apr)
   if (month >= 1 && month <= 3) {
     const indoorSow = beingSown.filter(p => p.serre);
     indoorSow.forEach(p => {
       tasks.push({
-        id: `sow-indoor-${p.id}`,
-        cat: 'actions', catLabel: 'Semis & Plantations', catIcon: '🌱',
+        id: `sow-indoor-${p.id}`, cat: 'actions', catLabel: 'Semis & Plantations', catIcon: '🌱',
         text: `🏠 ${p.e} Semer ${p.n} en intérieur`,
         detail: `${p.t} · En godet ou terrine, au chaud (18-22°C)`
       });
     });
-    // Outdoor sowing for non-serre plants
     const outdoorSow = beingSown.filter(p => !p.serre);
     outdoorSow.forEach(p => {
       tasks.push({
-        id: `sow-${p.id}`,
-        cat: 'actions', catLabel: 'Semis & Plantations', catIcon: '🌱',
+        id: `sow-${p.id}`, cat: 'actions', catLabel: 'Semis & Plantations', catIcon: '🌱',
         text: `${p.e} Semer ${p.n} en pleine terre`,
         detail: `${p.t} · Sol à 8°C+ minimum`
       });
@@ -211,48 +275,37 @@ function generateTasks(sel, toSow, toPlant, toHarv) {
   } else {
     toSow.forEach(p => {
       tasks.push({
-        id: `sow-${p.id}`,
-        cat: 'actions', catLabel: 'Semis & Plantations', catIcon: '🌱',
-        text: `${p.e} Semer ${p.n}`,
-        detail: p.t
+        id: `sow-${p.id}`, cat: 'actions', catLabel: 'Semis & Plantations', catIcon: '🌱',
+        text: `${p.e} Semer ${p.n}`, detail: p.t
       });
     });
   }
 
-  // Plantation — with practical, stage-specific advice
+  // Plantation
   toPlant.forEach(p => {
     const plantTip = getPlantingTip(p, NOW_H);
     const careHints = [];
     const soil = getCareField(p.id, 'soil');
     if (soil) careHints.push(soil.replace(/^[^\w\dÀ-ú]*/,'').split('.')[0]);
-
-    // Check if we're at the very START of planting period (preparation phase)
     const range = p.plant.find(([s, e]) => NOW_H >= s && NOW_H <= e);
     const isEarlyPhase = range && (NOW_H - range[0]) < 2;
-
     let detail = plantTip
       || `Espacement : ${p.spacing}cm entre plants, ${p.row || Math.round(p.spacing * 1.2)}cm entre rangs`
          + (careHints.length ? `. ${careHints[0]}` : '');
-
-    // Use "Préparer" instead of "Planter" for early phase of long-prep plants
     const NEEDS_PREP = ['pdt', 'ail', 'echalote', 'oignon', 'poireau'];
     const verb = isEarlyPhase && NEEDS_PREP.includes(p.id) ? 'Préparer' : 'Planter';
-
     tasks.push({
-      id: `plant-${p.id}`,
-      cat: 'actions', catLabel: 'Semis & Plantations', catIcon: '🌱',
-      text: `${p.e} ${verb} ${p.n}`,
-      detail
+      id: `plant-${p.id}`, cat: 'actions', catLabel: 'Semis & Plantations', catIcon: '🌱',
+      text: `${p.e} ${verb} ${p.n}`, detail
     });
   });
 
-  // Coming soon — anticiper
+  // Coming soon
   if (comingSoon.length) {
     comingSoon.forEach(p => {
       const nextAction = inR(p.sow, NOW_H + 1) || inR(p.sow, NOW_H + 2) ? 'semis' : 'plantation';
       tasks.push({
-        id: `soon-${p.id}`,
-        cat: 'actions', catLabel: 'Semis & Plantations', catIcon: '🌱',
+        id: `soon-${p.id}`, cat: 'actions', catLabel: 'Semis & Plantations', catIcon: '🌱',
         text: `⏳ ${p.e} ${p.n} : ${nextAction} bientôt !`,
         detail: `Préparer le matériel et l'emplacement`
       });
@@ -262,14 +315,13 @@ function generateTasks(sel, toSow, toPlant, toHarv) {
   // ── 2. RÉCOLTES ──
   toHarv.forEach(p => {
     tasks.push({
-      id: `harvest-${p.id}`,
-      cat: 'harvest', catLabel: 'Récoltes', catIcon: '🧺',
+      id: `harvest-${p.id}`, cat: 'harvest', catLabel: 'Récoltes', catIcon: '🧺',
       text: `${p.e} Récolter ${p.n}`,
       detail: getCareField(p.id, 'harvest_tips') || ''
     });
   });
 
-  // ── 3. ARROSAGE — seulement si des plantes sont en terre ET saison chaude ──
+  // ── 3. ARROSAGE ──
   if (inGround.length && isWarm) {
     const waterHigh = inGround.filter(p => {
       const w = getCareField(p.id, 'water') || '';
@@ -282,35 +334,28 @@ function generateTasks(sel, toSow, toPlant, toHarv) {
       if (isHot) detail = 'Arroser le matin tôt ou le soir. Au pied, jamais le feuillage ! 2-3x par semaine minimum.';
       else if (month === 4 || month === 9) detail = 'Arroser si pas de pluie depuis 3-4 jours. Vérifier le sol en enfonçant le doigt.';
       else detail = 'Arroser si le sol est sec en surface.';
-
       tasks.push({
-        id: 'water-high',
-        cat: 'water', catLabel: 'Arrosage', catIcon: '💧',
-        text: `💧💧💧 Arrosage abondant : ${waterHigh.map(p => p.e).join(' ')}`,
-        detail
+        id: 'water-high', cat: 'water', catLabel: 'Arrosage', catIcon: '💧',
+        text: `💧💧💧 Arrosage abondant : ${waterHigh.map(p => p.e).join(' ')}`, detail
       });
     }
     if (waterLow.length) {
       tasks.push({
-        id: 'water-low',
-        cat: 'water', catLabel: 'Arrosage', catIcon: '💧',
+        id: 'water-low', cat: 'water', catLabel: 'Arrosage', catIcon: '💧',
         text: `💧 Arrosage léger : ${waterLow.map(p => p.e).join(' ')}`,
         detail: 'Vérifier l\'humidité avant d\'arroser — ces plantes préfèrent un sol pas trop humide'
       });
     }
   } else if (beingSown.length && month >= 2 && month <= 4) {
-    // Seedlings need moisture
     tasks.push({
-      id: 'water-seedlings',
-      cat: 'water', catLabel: 'Arrosage', catIcon: '💧',
+      id: 'water-seedlings', cat: 'water', catLabel: 'Arrosage', catIcon: '💧',
       text: `🌱💧 Maintenir les semis humides : ${beingSown.map(p => p.e).join(' ')}`,
       detail: 'Vaporiser ou arroser en pluie fine. Le terreau ne doit jamais sécher complètement.'
     });
   }
 
-  // ── 4. ENTRETIEN — seulement pour les plantes EN TERRE ──
+  // ── 4. ENTRETIEN ──
   if (inGround.length) {
-    // Tuteurage (tomatoes, etc.) — May to August
     if (month >= 4 && month <= 7) {
       const toStake = inGround.filter(p =>
         ['tomate', 'poivron', 'piment', 'aubergine', 'concombre', 'haricot'].includes(p.id) &&
@@ -318,33 +363,27 @@ function generateTasks(sel, toSow, toPlant, toHarv) {
       );
       if (toStake.length) {
         tasks.push({
-          id: 'stake',
-          cat: 'care', catLabel: 'Entretien', catIcon: '✂️',
+          id: 'stake', cat: 'care', catLabel: 'Entretien', catIcon: '✂️',
           text: `🪴 Vérifier les tuteurs : ${toStake.map(p => p.e).join(' ')}`,
           detail: 'Attacher les tiges sans serrer. Vérifier la solidité après le vent.'
         });
       }
     }
 
-    // Pruning/pinching — only when plants are growing
     inGround.forEach(p => {
       const pruning = getCareField(p.id, 'pruning');
       if (!pruning) return;
       tasks.push({
-        id: `prune-${p.id}`,
-        cat: 'care', catLabel: 'Entretien', catIcon: '✂️',
-        text: `${p.e} ${p.n} : entretien`,
-        detail: pruning
+        id: `prune-${p.id}`, cat: 'care', catLabel: 'Entretien', catIcon: '✂️',
+        text: `${p.e} ${p.n} : entretien`, detail: pruning
       });
     });
 
-    // Disease check — only warm + humid months, only for plants in ground
     if (isWarm) {
       const diseaseWatch = inGround.filter(p => getCareField(p.id, 'diseases'));
       if (diseaseWatch.length) {
         tasks.push({
-          id: 'disease-check',
-          cat: 'care', catLabel: 'Entretien', catIcon: '✂️',
+          id: 'disease-check', cat: 'care', catLabel: 'Entretien', catIcon: '✂️',
           text: `🛡️ Inspecter maladies/ravageurs : ${diseaseWatch.map(p => p.e).join(' ')}`,
           detail: isHot
             ? 'Mildiou, oïdium, pucerons — inspecter feuilles matin et soir. Traiter dès les premiers signes.'
@@ -354,19 +393,17 @@ function generateTasks(sel, toSow, toPlant, toHarv) {
     }
   }
 
-  // ── 5. SAISONNIER — tâches de saison selon le mois ──
+  // ── 5. SAISONNIER ──
   const seasonal = getSeasonalTasks(month, sel, inGround, beingSown, comingSoon);
   seasonal.forEach(t => tasks.push(t));
 
   return tasks;
 }
 
-// Practical planting tips based on plant type and current period
 function getPlantingTip(p, nowH) {
-  // Find how far into the planting period we are
   const plantRange = p.plant.find(([s, e]) => nowH >= s && nowH <= e);
   if (!plantRange) return '';
-  const weekInPeriod = nowH - plantRange[0]; // 0 = just started, 1 = second half-month, etc.
+  const weekInPeriod = nowH - plantRange[0];
   const isEarlyInPeriod = weekInPeriod <= 1;
 
   const TIPS = {

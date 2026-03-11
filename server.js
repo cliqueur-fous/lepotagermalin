@@ -12,7 +12,7 @@ const DATA_DIR = path.join(__dirname, 'data', 'gardens');
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
 });
 
-const DEFAULT_DATA = { garden: [], journal: [], tasks: {} };
+const DEFAULT_DATA = { garden: [], journal: [], tasks: {}, stages: {}, inventory: [] };
 
 function gardenPath(code) {
   // Sanitize code to prevent path traversal
@@ -68,10 +68,12 @@ app.post('/api/garden/:code', (req, res) => {
   const existing = readGarden(code);
   if (!existing) return res.status(404).json({ error: 'Jardin introuvable' });
 
-  const { garden, journal, tasks } = req.body;
+  const { garden, journal, tasks, stages, inventory } = req.body;
   if (Array.isArray(garden)) existing.garden = garden;
   if (Array.isArray(journal)) existing.journal = journal;
   if (tasks && typeof tasks === 'object') existing.tasks = tasks;
+  if (stages && typeof stages === 'object') existing.stages = stages;
+  if (Array.isArray(inventory)) existing.inventory = inventory;
   existing.updatedAt = Date.now();
 
   writeGarden(code, existing);

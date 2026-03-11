@@ -110,6 +110,8 @@
   <div id="journalContent"></div>
 </div>
 
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="if(this.files[0])importGardenData(this.files[0])">
+
 <footer>
   <strong>🌱 Le Potager Malin</strong> — lepotagermalin.fr<br>
   Calendrier basé sur le climat tempéré français (zone médiane) · Adapte selon ta région !<br>

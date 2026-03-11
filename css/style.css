@@ -348,6 +348,13 @@ footer a:hover{text-decoration:underline}
   .welcome{border-radius:0;margin:-12px -10px 16px}
   .selection-bar{bottom:60px}
   .toast-container{bottom:130px}
+  .stages-header{flex-direction:column;align-items:flex-start}
+  .stage-plant{flex-direction:column;align-items:flex-start}
+  .stage-plant-info{min-width:unset}
+  .harvest-bar-label{min-width:70px;font-size:.7rem}
+  .harvest-bar-value{min-width:45px;font-size:.68rem}
+  .inv-missing-item{font-size:.75rem}
+  .gb-actions{flex-wrap:wrap}
 }
 
 .muted{color:var(--muted);font-size:.82rem}
@@ -378,3 +385,59 @@ footer a:hover{text-decoration:underline}
 .gb-btn:hover{background:rgba(26,46,26,.1)}
 .gb-btn-danger{color:var(--warn)}
 .gb-btn-danger:hover{background:rgba(231,76,60,.08)}
+
+/* ═══════ STAGES TRACKER ═══════ */
+.stages-tracker{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:16px}
+.stages-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.stages-header h3{font-size:1.05rem;font-weight:900;margin:0}
+.stages-progress{display:flex;align-items:center;gap:10px}
+.stages-progress-bar{width:120px;height:10px;background:rgba(26,46,26,.08);border-radius:5px;overflow:hidden}
+.stages-progress-fill{height:100%;background:linear-gradient(90deg,var(--sow),var(--plant),var(--harvest));border-radius:5px;transition:width .5s ease}
+.stages-progress-text{font-size:.82rem;font-weight:900;color:var(--accent-dark)}
+
+.stages-grid{display:flex;flex-direction:column;gap:6px}
+.stage-plant{display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(26,46,26,.02);border-radius:12px;flex-wrap:wrap}
+.stage-plant-info{display:flex;align-items:center;gap:6px;min-width:140px;flex:1}
+.stage-emoji{font-size:1.2rem}
+.stage-name{font-weight:800;font-size:.82rem}
+.stage-qty{font-size:.65rem;font-weight:700;color:var(--muted);background:rgba(46,204,113,.08);padding:2px 7px;border-radius:6px;white-space:nowrap}
+.stage-steps{display:flex;gap:5px;flex-wrap:wrap}
+.stage-step{border:2px solid rgba(26,46,26,.1);background:#fff;padding:4px 10px;border-radius:10px;font-family:inherit;font-weight:700;font-size:.68rem;cursor:pointer;transition:all .2s ease;white-space:nowrap}
+.stage-step:hover{border-color:var(--accent);transform:translateY(-1px)}
+.stage-step.done{border-color:transparent;font-weight:800}
+
+/* ═══════ INVENTORY / SHOPPING LIST ═══════ */
+.inv-summary{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:18px}
+.inv-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.inv-header h3{font-size:1rem;font-weight:900;margin:0}
+.inv-count{font-size:.78rem;font-weight:800;color:var(--accent-dark)}
+.inv-bar{height:8px;background:rgba(26,46,26,.08);border-radius:4px;overflow:hidden;margin-bottom:12px}
+.inv-bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .4s ease}
+.inv-missing{background:#fef9e7;border-radius:12px;padding:12px}
+.inv-missing-title{font-weight:800;font-size:.85rem;color:#7d6608;margin-bottom:8px}
+.inv-missing-list{display:flex;flex-direction:column;gap:4px}
+.inv-missing-item{display:flex;align-items:center;gap:8px;padding:4px 8px;background:#fff;border-radius:8px;font-size:.8rem;font-weight:700}
+.inv-missing-item span:first-child{flex:1}
+.inv-missing-qty{font-size:.7rem;color:var(--muted);font-weight:600}
+.inv-check-btn{background:none;border:none;cursor:pointer;font-size:.9rem;padding:2px 4px;transition:.2s}
+.inv-check-btn:hover{transform:scale(1.2)}
+.inv-complete{text-align:center;font-weight:800;font-size:.88rem;color:var(--accent-dark);padding:8px}
+
+.p-qty{font-size:.6rem;font-weight:700;color:var(--muted);margin-top:2px}
+.p-inv-toggle{font-size:.58rem;font-weight:700;padding:3px 6px;border-radius:6px;margin-top:3px;cursor:pointer;transition:.2s;background:rgba(231,76,60,.08);color:#922b21}
+.p-inv-toggle.owned{background:rgba(46,204,113,.1);color:#1a5e2a}
+
+/* ═══════ HARVEST STATS ═══════ */
+.harvest-stats{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:16px}
+.harvest-stats-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.harvest-stats-header h3{font-size:1rem;font-weight:900;margin:0}
+.harvest-total{font-size:.85rem;font-weight:900;color:var(--accent-dark);background:var(--accent-light);padding:4px 12px;border-radius:10px}
+.harvest-section{margin-bottom:14px}
+.harvest-section:last-child{margin-bottom:0}
+.harvest-section-title{font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px}
+.harvest-bars{display:flex;flex-direction:column;gap:6px}
+.harvest-bar-row{display:flex;align-items:center;gap:10px}
+.harvest-bar-label{min-width:90px;font-size:.78rem;font-weight:700;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.harvest-bar-track{flex:1;height:16px;background:rgba(26,46,26,.05);border-radius:8px;overflow:hidden}
+.harvest-bar-fill{height:100%;border-radius:8px;transition:width .5s ease;min-width:4px}
+.harvest-bar-value{min-width:55px;font-size:.75rem;font-weight:800;color:var(--text)}

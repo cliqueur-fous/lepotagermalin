@@ -1,5 +1,5 @@
 // ============================
-// 📝 JOURNAL — Carnet de bord
+// 📝 JOURNAL — Carnet de bord + Stats récoltes
 // ============================
 
 let journal = JSON.parse(localStorage.getItem('lpm-journal') || '[]');
@@ -44,10 +44,13 @@ function renderJournal() {
       <div class="j-stat"><span class="j-stat-num">${thisYear.length}</span><small>cette année</small></div>
       ${totalHarvest ? `<div class="j-stat j-stat-green"><span class="j-stat-num">${totalHarvest.toFixed(1)}</span><small>kg récoltés</small></div>` : ''}
     </div>
-  </div>
+  </div>`;
 
-  <!-- ADD FORM -->
-  <div class="j-form-card">
+  // ═══════ HARVEST STATS CHART ═══════
+  h += renderHarvestStats();
+
+  // ADD FORM
+  h += `<div class="j-form-card">
     <h3>➕ Nouvelle entrée</h3>
     <div class="j-form">
       <div class="j-form-row">
@@ -107,6 +110,84 @@ function renderJournal() {
   renderJournalEntries();
 }
 
+// ═══════ HARVEST STATS ═══════
+function renderHarvestStats() {
+  const harvestEntries = journal.filter(e => e.action === 'harvest' && e.qty > 0);
+  if (!harvestEntries.length) return '';
+
+  // By plant
+  const byPlant = {};
+  harvestEntries.forEach(e => {
+    if (!e.plantId) return;
+    if (!byPlant[e.plantId]) byPlant[e.plantId] = 0;
+    byPlant[e.plantId] += e.qty;
+  });
+
+  const plantEntries = Object.entries(byPlant).sort((a, b) => b[1] - a[1]);
+  const maxKg = Math.max(...plantEntries.map(([, v]) => v), 0.1);
+
+  // By month
+  const byMonth = {};
+  harvestEntries.forEach(e => {
+    const d = new Date(e.date);
+    const m = d.getMonth();
+    if (!byMonth[m]) byMonth[m] = 0;
+    byMonth[m] += e.qty;
+  });
+
+  const monthEntries = Object.entries(byMonth).sort((a, b) => a[0] - b[0]);
+  const maxMonthKg = Math.max(...monthEntries.map(([, v]) => v), 0.1);
+
+  const totalKg = harvestEntries.reduce((s, e) => s + e.qty, 0);
+
+  let h = `<div class="harvest-stats">
+    <div class="harvest-stats-header">
+      <h3>📊 Statistiques de récolte</h3>
+      <span class="harvest-total">${totalKg.toFixed(1)} kg au total</span>
+    </div>`;
+
+  // Chart by plant
+  if (plantEntries.length) {
+    h += `<div class="harvest-section">
+      <div class="harvest-section-title">Par plante</div>
+      <div class="harvest-bars">`;
+    plantEntries.forEach(([id, kg]) => {
+      const p = plantById(id);
+      if (!p) return;
+      const pct = Math.round(kg / maxKg * 100);
+      h += `<div class="harvest-bar-row">
+        <div class="harvest-bar-label">${p.e} ${p.n}</div>
+        <div class="harvest-bar-track">
+          <div class="harvest-bar-fill" style="width:${pct}%;background:var(--harvest)"></div>
+        </div>
+        <div class="harvest-bar-value">${kg.toFixed(1)} kg</div>
+      </div>`;
+    });
+    h += '</div></div>';
+  }
+
+  // Chart by month
+  if (monthEntries.length) {
+    h += `<div class="harvest-section">
+      <div class="harvest-section-title">Par mois</div>
+      <div class="harvest-bars">`;
+    monthEntries.forEach(([m, kg]) => {
+      const pct = Math.round(kg / maxMonthKg * 100);
+      h += `<div class="harvest-bar-row">
+        <div class="harvest-bar-label">${ME[m]} ${MN[m]}</div>
+        <div class="harvest-bar-track">
+          <div class="harvest-bar-fill" style="width:${pct}%;background:var(--accent)"></div>
+        </div>
+        <div class="harvest-bar-value">${kg.toFixed(1)} kg</div>
+      </div>`;
+    });
+    h += '</div></div>';
+  }
+
+  h += '</div>';
+  return h;
+}
+
 function selectJAction(action) {
   document.getElementById('jAction').value = action;
   document.querySelectorAll('.j-action-btn').forEach(b => b.classList.remove('j-action-selected'));
@@ -131,6 +212,14 @@ function addJournalEntry() {
     note,
     qty: action === 'harvest' ? qty : 0,
   });
+
+  // Auto-update stages when logging sow/plant/harvest
+  if (plantId && ['sow', 'plant', 'harvest'].includes(action)) {
+    const ps = getPlantStage(plantId);
+    if (!ps[action]) {
+      setStage(plantId, action, date);
+    }
+  }
 
   saveJournal();
   showToast('Entrée ajoutée !', 'success');
