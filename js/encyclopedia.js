@@ -98,21 +98,23 @@ function renderEnc() {
       <div class="e-actions">${actionTags(p)}</div>
       ${miniBar24(p)}
       ${encCareBlock(p)}
-      ${goodPlants.length || badPlants.length ? `<div class="e-assoc-section">
-        <div class="e-assoc-title">🤝 Associations</div>
-        ${goodPlants.length ? `<div class="e-assoc-group e-assoc-good">
-          <div class="e-assoc-label">✅ Planter à côté</div>
-          <div class="e-assoc-list">${goodPlants.map(x =>
-            `<span class="e-assoc-chip good" title="${x.n}">${x.e} ${x.n}</span>`
-          ).join('')}</div>
-        </div>` : ''}
+      ${goodPlants.length || badPlants.length ? `<details class="e-assoc-details">
+        <summary class="e-assoc-toggle">🤝 Associations <span class="e-assoc-count">${goodPlants.length + badPlants.length}</span></summary>
+        <div class="e-assoc-body">
         ${badPlants.length ? `<div class="e-assoc-group e-assoc-bad">
           <div class="e-assoc-label">❌ Éloigner</div>
           <div class="e-assoc-list">${badPlants.map(x =>
             `<span class="e-assoc-chip bad" title="${x.n}">${x.e} ${x.n}</span>`
           ).join('')}</div>
         </div>` : ''}
-      </div>` : ''}
+        ${goodPlants.length ? `<div class="e-assoc-group e-assoc-good">
+          <div class="e-assoc-label">✅ Planter à côté</div>
+          <div class="e-assoc-list">${goodPlants.map(x =>
+            `<span class="e-assoc-chip good" title="${x.n}">${x.e} ${x.n}</span>`
+          ).join('')}</div>
+        </div>` : ''}
+        </div>
+      </details>` : ''}
     </div>`;
   }).join('');
 }

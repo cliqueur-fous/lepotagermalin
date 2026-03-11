@@ -106,8 +106,15 @@ function renderDash() {
     }
   }
   if (badPairs.length || goodPairs.length) {
-    h += `<div class="dash-assoc">
-      <div class="dash-assoc-header">🤝 Associations dans ton potager</div>`;
+    h += `<details class="dash-assoc" ${badPairs.length ? 'open' : ''}>
+      <summary class="dash-assoc-toggle">
+        <span class="dash-assoc-header">🤝 Associations dans ton potager</span>
+        <span class="dash-assoc-badges">
+          ${badPairs.length ? `<span class="dash-assoc-badge bad">${badPairs.length} ❌</span>` : ''}
+          ${goodPairs.length ? `<span class="dash-assoc-badge good">${goodPairs.length} ✅</span>` : ''}
+        </span>
+      </summary>
+      <div class="dash-assoc-body">`;
     if (badPairs.length) {
       h += `<div class="dash-assoc-group bad">
         <div class="dash-assoc-label">❌ À éloigner</div>
@@ -117,16 +124,16 @@ function renderDash() {
       </div>`;
     }
     if (goodPairs.length) {
-      h += `<details class="dash-assoc-group good">
-        <summary class="dash-assoc-label">✅ Bonnes associations (${goodPairs.length})</summary>
+      h += `<div class="dash-assoc-group good">
+        <div class="dash-assoc-label">✅ Bonnes associations</div>
         <div class="dash-assoc-good-list">
           ${goodPairs.map(([a, b]) =>
             `<span class="dash-assoc-pair good">${a.e} ${a.n} + ${b.e} ${b.n}</span>`
           ).join('')}
         </div>
-      </details>`;
+      </div>`;
     }
-    h += `</div>`;
+    h += `</div></details>`;
   }
 
   // ═══════ TASK CHECKLIST ═══════
