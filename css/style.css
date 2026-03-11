@@ -525,6 +525,34 @@ footer a:hover{text-decoration:underline}
 .harvest-bar-fill{height:100%;border-radius:8px;transition:width .5s ease;min-width:4px}
 .harvest-bar-value{min-width:55px;font-size:.75rem;font-weight:800;color:var(--text)}
 
+/* ═══════ JOURNAL PHOTOS ═══════ */
+.j-photo-input{flex:1;display:flex;flex-direction:column;gap:8px}
+.j-photo-input input[type="file"]{display:none}
+.j-photo-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(26,46,26,.04);border:2px dashed rgba(26,46,26,.15);border-radius:12px;font-family:inherit;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .2s;text-align:center;justify-content:center}
+.j-photo-btn:hover{border-color:var(--accent);background:var(--accent-light)}
+.j-photo-preview{}
+.j-photo-thumb{position:relative;display:inline-block;margin-top:4px}
+.j-photo-thumb img{width:100px;height:100px;object-fit:cover;border-radius:12px;border:2px solid rgba(26,46,26,.1)}
+.j-photo-remove{position:absolute;top:-6px;right:-6px;width:22px;height:22px;background:var(--warn);color:#fff;border:none;border-radius:50%;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;font-weight:900;padding:0}
+.j-photo-remove:hover{transform:scale(1.1)}
+
+.j-entry-photo{margin-top:6px;cursor:pointer}
+.j-entry-photo img{width:120px;height:90px;object-fit:cover;border-radius:10px;border:2px solid rgba(26,46,26,.08);transition:.2s}
+.j-entry-photo img:hover{transform:scale(1.03);box-shadow:var(--shadow-lg)}
+.j-entry.has-photo{min-height:auto}
+
+.j-filter-photo-btn{background:rgba(26,46,26,.05);border:2px solid rgba(26,46,26,.1);padding:6px 12px;border-radius:12px;font-size:.9rem;cursor:pointer;transition:.2s;font-family:inherit}
+.j-filter-photo-btn:hover{border-color:var(--accent)}
+.j-filter-photo-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.j-filter-photo-btn.hidden{display:none}
+
+.j-lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;cursor:pointer;animation:fadeIn .2s ease}
+.j-lightbox img{max-width:90vw;max-height:85vh;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.4);object-fit:contain}
+
+@media(max-width:768px){
+  .j-entry-photo img{width:100%;height:auto;max-height:200px}
+}
+
 /* ═══════ DARK MODE TOGGLE ═══════ */
 .dark-toggle{background:rgba(255,255,255,.1);border:none;padding:6px 10px;border-radius:12px;font-size:1rem;cursor:pointer;transition:.2s;line-height:1}
 .dark-toggle:hover{background:rgba(255,255,255,.2)}

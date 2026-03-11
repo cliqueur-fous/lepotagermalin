@@ -2,13 +2,15 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const multer = require('multer');
 
 const app = express();
 const PORT = process.env.PORT || 3005;
 const DATA_DIR = path.join(__dirname, 'data', 'gardens');
+const PHOTOS_DIR = path.join(__dirname, 'data', 'photos');
 
-// Ensure data directory exists
-[path.join(__dirname, 'data'), DATA_DIR].forEach(d => {
+// Ensure data directories exist
+[path.join(__dirname, 'data'), DATA_DIR, PHOTOS_DIR].forEach(d => {
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
 });
 
@@ -41,8 +43,47 @@ function generateCode() {
   return crypto.randomBytes(3).toString('hex').toUpperCase();
 }
 
+// ═══════ PHOTO UPLOAD ═══════
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, PHOTOS_DIR),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+      const allowed = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+      if (!allowed.includes(ext)) return cb(new Error('Type non autorisé'));
+      cb(null, `${Date.now()}-${crypto.randomBytes(4).toString('hex')}${ext}`);
+    }
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) cb(null, true);
+    else cb(new Error('Seules les images sont autorisées'));
+  }
+});
+
 app.use(express.json({ limit: '1mb' }));
 app.use(express.static(__dirname, { index: 'index.html' }));
+
+// Serve photos statically
+app.use('/photos', express.static(PHOTOS_DIR));
+
+// POST /api/photo — upload a photo, returns { url }
+app.post('/api/photo', upload.single('photo'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Aucune image' });
+  res.json({ url: `/photos/${req.file.filename}` });
+}, (err, req, res, next) => {
+  res.status(400).json({ error: err.message || 'Erreur upload' });
+});
+
+// DELETE /api/photo/:filename — delete a photo
+app.delete('/api/photo/:filename', (req, res) => {
+  const filename = req.params.filename.replace(/[^a-zA-Z0-9._-]/g, '');
+  const filepath = path.join(PHOTOS_DIR, filename);
+  if (fs.existsSync(filepath)) {
+    fs.unlinkSync(filepath);
+  }
+  res.json({ ok: true });
+});
 
 // POST /api/garden/create — create a new garden, returns { code }
 app.post('/api/garden/create', (req, res) => {

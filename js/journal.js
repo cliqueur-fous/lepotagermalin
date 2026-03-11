@@ -3,7 +3,7 @@
 // ============================
 
 let journal = JSON.parse(localStorage.getItem('lpm-journal') || '[]');
-// Each entry: {id, date, plantId, action, note, qty}
+// Each entry: {id, date, plantId, action, note, qty, photo}
 // action: 'sow','plant','harvest','water','treat','other'
 
 const J_ACTIONS = {
@@ -35,6 +35,7 @@ function renderJournal() {
   const totalHarvest = journal
     .filter(e => e.action === 'harvest' && e.qty)
     .reduce((s, e) => s + e.qty, 0);
+  const photoCount = journal.filter(e => e.photo).length;
 
   let h = `
   <div class="j-top">
@@ -43,6 +44,7 @@ function renderJournal() {
       <div class="j-stat"><span class="j-stat-num">${thisMonth.length}</span><small>ce mois</small></div>
       <div class="j-stat"><span class="j-stat-num">${thisYear.length}</span><small>cette année</small></div>
       ${totalHarvest ? `<div class="j-stat j-stat-green"><span class="j-stat-num">${totalHarvest.toFixed(1)}</span><small>kg récoltés</small></div>` : ''}
+      ${photoCount ? `<div class="j-stat"><span class="j-stat-num">${photoCount}</span><small>📸 photos</small></div>` : ''}
     </div>
   </div>`;
 
@@ -82,10 +84,18 @@ function renderJournal() {
         <input type="number" id="jQty" step="0.1" min="0" placeholder="0.5">
       </div>
       <div class="j-form-row">
+        <label>Photo</label>
+        <div class="j-photo-input">
+          <input type="file" id="jPhoto" accept="image/*" capture="environment" onchange="previewJPhoto(this)">
+          <label for="jPhoto" class="j-photo-btn">📷 Ajouter une photo</label>
+          <div id="jPhotoPreview" class="j-photo-preview"></div>
+        </div>
+      </div>
+      <div class="j-form-row">
         <label>Note</label>
         <textarea id="jNote" rows="2" placeholder="Détails, observations..."></textarea>
       </div>
-      <button class="btn btn-full" onclick="addJournalEntry()">✅ Ajouter</button>
+      <button class="btn btn-full" onclick="addJournalEntry()" id="jSubmitBtn">✅ Ajouter</button>
     </div>
   </div>
 
@@ -102,12 +112,57 @@ function renderJournal() {
       <option value="">Toutes les actions</option>
       ${Object.entries(J_ACTIONS).map(([k,v]) => `<option value="${k}">${v.l}</option>`).join('')}
     </select>
+    <button class="j-filter-photo-btn ${journal.some(e=>e.photo) ? '' : 'hidden'}" onclick="togglePhotoFilter(this)" title="Filtrer les entrées avec photo">📸</button>
   </div>
 
   <div id="jEntries"></div>`;
 
   c.innerHTML = h;
   renderJournalEntries();
+}
+
+// ═══════ PHOTO PREVIEW ═══════
+function previewJPhoto(input) {
+  const preview = document.getElementById('jPhotoPreview');
+  if (!input.files || !input.files[0]) {
+    preview.innerHTML = '';
+    return;
+  }
+  const file = input.files[0];
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Photo trop lourde (max 5 Mo)', 'warn');
+    input.value = '';
+    preview.innerHTML = '';
+    return;
+  }
+  const url = URL.createObjectURL(file);
+  preview.innerHTML = `
+    <div class="j-photo-thumb">
+      <img src="${url}" alt="Aperçu">
+      <button class="j-photo-remove" onclick="removeJPhotoPreview()" title="Retirer">×</button>
+    </div>`;
+}
+
+function removeJPhotoPreview() {
+  const input = document.getElementById('jPhoto');
+  if (input) input.value = '';
+  const preview = document.getElementById('jPhotoPreview');
+  if (preview) preview.innerHTML = '';
+}
+
+// ═══════ PHOTO UPLOAD ═══════
+async function uploadPhoto(file) {
+  const formData = new FormData();
+  formData.append('photo', file);
+  try {
+    const resp = await fetch('/api/photo', { method: 'POST', body: formData });
+    if (!resp.ok) throw new Error('Upload failed');
+    const data = await resp.json();
+    return data.url;
+  } catch {
+    showToast('Erreur upload photo', 'warn');
+    return null;
+  }
 }
 
 // ═══════ HARVEST STATS ═══════
@@ -195,14 +250,28 @@ function selectJAction(action) {
   document.getElementById('jQtyRow').style.display = action === 'harvest' ? 'flex' : 'none';
 }
 
-function addJournalEntry() {
+async function addJournalEntry() {
   const date = document.getElementById('jDate').value;
   const plantId = document.getElementById('jPlant').value;
   const action = document.getElementById('jAction').value;
   const note = document.getElementById('jNote').value.trim();
   const qty = parseFloat(document.getElementById('jQty')?.value) || 0;
+  const photoInput = document.getElementById('jPhoto');
+  const photoFile = photoInput?.files?.[0] || null;
 
   if (!action) { alert('Choisis une action !'); return; }
+
+  // Disable button during upload
+  const btn = document.getElementById('jSubmitBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Upload...'; }
+
+  // Upload photo if present
+  let photoUrl = null;
+  if (photoFile) {
+    photoUrl = await uploadPhoto(photoFile);
+  }
+
+  if (btn) { btn.disabled = false; btn.textContent = '✅ Ajouter'; }
 
   journal.unshift({
     id: Date.now(),
@@ -211,6 +280,7 @@ function addJournalEntry() {
     action,
     note,
     qty: action === 'harvest' ? qty : 0,
+    photo: photoUrl || null,
   });
 
   // Auto-update stages when logging sow/plant/harvest
@@ -222,14 +292,37 @@ function addJournalEntry() {
   }
 
   saveJournal();
-  showToast('Entrée ajoutée !', 'success');
+  showToast(photoUrl ? 'Entrée + photo ajoutées !' : 'Entrée ajoutée !', 'success');
   renderJournal();
 }
 
 function deleteJournalEntry(id) {
+  const entry = journal.find(e => e.id === id);
+  // Delete associated photo from server
+  if (entry?.photo) {
+    const filename = entry.photo.split('/').pop();
+    fetch(`/api/photo/${filename}`, { method: 'DELETE' }).catch(() => {});
+  }
   journal = journal.filter(e => e.id !== id);
   saveJournal();
   renderJournalEntries();
+}
+
+// ═══════ PHOTO FILTER ═══════
+let _photoFilterOn = false;
+function togglePhotoFilter(btn) {
+  _photoFilterOn = !_photoFilterOn;
+  btn.classList.toggle('active', _photoFilterOn);
+  renderJournalEntries();
+}
+
+// ═══════ PHOTO LIGHTBOX ═══════
+function openPhotoLightbox(url) {
+  const overlay = document.createElement('div');
+  overlay.className = 'j-lightbox';
+  overlay.onclick = () => overlay.remove();
+  overlay.innerHTML = `<img src="${url}" alt="Photo journal">`;
+  document.body.appendChild(overlay);
 }
 
 function renderJournalEntries() {
@@ -242,6 +335,7 @@ function renderJournalEntries() {
   let entries = [...journal];
   if (filterPlant) entries = entries.filter(e => e.plantId === filterPlant);
   if (filterAction) entries = entries.filter(e => e.action === filterAction);
+  if (_photoFilterOn) entries = entries.filter(e => e.photo);
 
   if (!entries.length) {
     container.innerHTML = `<div class="empty-state"><div class="big-emoji">📝</div>
@@ -271,13 +365,16 @@ function renderJournalEntries() {
       const d = new Date(e.date);
       const dayStr = `${d.getDate()} ${MN[d.getMonth()].slice(0,3)}`;
 
-      html += `<div class="j-entry">
+      html += `<div class="j-entry ${e.photo ? 'has-photo' : ''}">
         <div class="j-entry-date">${dayStr}</div>
         <div class="j-entry-body">
           <span class="j-entry-action" style="background:${act.bg};color:${act.color}">${act.l}</span>
           ${plant ? `<span class="j-entry-plant">${plant.e} ${plant.n}</span>` : ''}
           ${e.qty ? `<span class="j-entry-qty">${e.qty} kg</span>` : ''}
           ${e.note ? `<div class="j-entry-note">${e.note}</div>` : ''}
+          ${e.photo ? `<div class="j-entry-photo" onclick="openPhotoLightbox('${e.photo}')">
+            <img src="${e.photo}" alt="Photo" loading="lazy">
+          </div>` : ''}
         </div>
         <button class="j-entry-del" onclick="deleteJournalEntry(${e.id})" title="Supprimer">×</button>
       </div>`;
