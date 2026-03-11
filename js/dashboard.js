@@ -95,21 +95,38 @@ function renderDash() {
   // ═══════ PLANT STAGES TRACKER ═══════
   h += renderStagesTracker(sel);
 
-  // Companion alerts
-  const alerts = [];
+  // Companion alerts — bad associations
+  const badPairs = [];
+  const goodPairs = [];
   for (let i = 0; i < sel.length; i++) {
     for (let j = i + 1; j < sel.length; j++) {
-      if (getCompanion(sel[i].id, sel[j].id) === -1) {
-        alerts.push(`${sel[i].e} ${sel[i].n} + ${sel[j].e} ${sel[j].n}`);
-      }
+      const v = getCompanion(sel[i].id, sel[j].id);
+      if (v === -1) badPairs.push([sel[i], sel[j]]);
+      else if (v === 1) goodPairs.push([sel[i], sel[j]]);
     }
   }
-  if (alerts.length) {
-    h += `<div class="dash-alerts">
-      <div class="alert-title">⚠️ Attention aux associations</div>
-      ${alerts.map(a => `<div class="alert-item">❌ ${a} — à éloigner</div>`).join('')}
-      <div class="alert-link" onclick="goTo('encyclo')">→ Voir les associations</div>
-    </div>`;
+  if (badPairs.length || goodPairs.length) {
+    h += `<div class="dash-assoc">
+      <div class="dash-assoc-header">🤝 Associations dans ton potager</div>`;
+    if (badPairs.length) {
+      h += `<div class="dash-assoc-group bad">
+        <div class="dash-assoc-label">❌ À éloigner</div>
+        ${badPairs.map(([a, b]) =>
+          `<div class="dash-assoc-pair bad">${a.e} ${a.n} <span class="dash-assoc-sep">✕</span> ${b.e} ${b.n}</div>`
+        ).join('')}
+      </div>`;
+    }
+    if (goodPairs.length) {
+      h += `<details class="dash-assoc-group good">
+        <summary class="dash-assoc-label">✅ Bonnes associations (${goodPairs.length})</summary>
+        <div class="dash-assoc-good-list">
+          ${goodPairs.map(([a, b]) =>
+            `<span class="dash-assoc-pair good">${a.e} ${a.n} + ${b.e} ${b.n}</span>`
+          ).join('')}
+        </div>
+      </details>`;
+    }
+    h += `</div>`;
   }
 
   // ═══════ TASK CHECKLIST ═══════

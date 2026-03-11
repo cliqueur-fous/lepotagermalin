@@ -80,9 +80,8 @@ function renderEnc() {
   g.innerHTML = f.map(p => {
     const ig = myG.includes(p.id);
     const comp = getCompanionsFor(p.id);
-    const goodNames = comp.good.map(id => plantById(id)).filter(Boolean).map(x => x.e).join(' ');
-    const badNames = comp.bad.map(id => plantById(id)).filter(Boolean).map(x => x.e).join(' ');
-
+    const goodPlants = comp.good.map(id => plantById(id)).filter(Boolean);
+    const badPlants = comp.bad.map(id => plantById(id)).filter(Boolean);
     const rq = RECOMMENDED_QTY[p.id];
 
     return `<div class="e-card ${ig ? 'in-garden' : ''}">
@@ -99,13 +98,21 @@ function renderEnc() {
       <div class="e-actions">${actionTags(p)}</div>
       ${miniBar24(p)}
       ${encCareBlock(p)}
-      ${comp.good.length || comp.bad.length ? `<details class="e-care-details">
-        <summary class="e-care-toggle">🤝 Associations</summary>
-        <div class="e-companions">
-          ${goodNames ? `<span class="comp-good">👍 ${goodNames}</span>` : ''}
-          ${badNames ? `<span class="comp-bad">👎 ${badNames}</span>` : ''}
-        </div>
-      </details>` : ''}
+      ${goodPlants.length || badPlants.length ? `<div class="e-assoc-section">
+        <div class="e-assoc-title">🤝 Associations</div>
+        ${goodPlants.length ? `<div class="e-assoc-group e-assoc-good">
+          <div class="e-assoc-label">✅ Planter à côté</div>
+          <div class="e-assoc-list">${goodPlants.map(x =>
+            `<span class="e-assoc-chip good" title="${x.n}">${x.e} ${x.n}</span>`
+          ).join('')}</div>
+        </div>` : ''}
+        ${badPlants.length ? `<div class="e-assoc-group e-assoc-bad">
+          <div class="e-assoc-label">❌ Éloigner</div>
+          <div class="e-assoc-list">${badPlants.map(x =>
+            `<span class="e-assoc-chip bad" title="${x.n}">${x.e} ${x.n}</span>`
+          ).join('')}</div>
+        </div>` : ''}
+      </div>` : ''}
     </div>`;
   }).join('');
 }

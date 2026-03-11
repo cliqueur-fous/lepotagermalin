@@ -74,11 +74,23 @@ nav{background:linear-gradient(135deg,#1a2e1a 0%,#2d4a2d 100%);color:#fff;displa
 .dash-stat.rest{background:rgba(26,46,26,.05);color:var(--muted)}
 .dash-num{font-size:1.4rem;font-weight:900}
 
-.dash-alerts{background:#fdf2f2;border:2px solid #f5b7b1;border-radius:var(--radius);padding:16px;margin-bottom:16px}
-.alert-title{font-weight:800;font-size:.9rem;color:#c0392b;margin-bottom:10px}
-.alert-item{font-size:.8rem;font-weight:600;color:#7d6608;padding:4px 0}
-.alert-link{font-size:.78rem;font-weight:700;color:var(--accent);cursor:pointer;margin-top:10px}
-.alert-link:hover{text-decoration:underline}
+/* ═══════ ASSOCIATIONS (DASHBOARD) ═══════ */
+.dash-assoc{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:16px}
+.dash-assoc-header{font-weight:900;font-size:1.05rem;margin-bottom:12px}
+.dash-assoc-group{margin-bottom:10px}
+.dash-assoc-group:last-child{margin-bottom:0}
+.dash-assoc-group.bad{background:rgba(231,76,60,.04);border:2px solid rgba(231,76,60,.12);border-radius:12px;padding:10px 12px}
+.dash-assoc-group.good{border:none}
+.dash-assoc-group.good > summary{cursor:pointer;list-style:none;user-select:none}
+.dash-assoc-group.good > summary::-webkit-details-marker{display:none}
+.dash-assoc-label{font-size:.82rem;font-weight:800;margin-bottom:6px}
+.dash-assoc-group.bad .dash-assoc-label{color:#922b21}
+.dash-assoc-group.good .dash-assoc-label{color:#1a5e2a}
+.dash-assoc-pair{font-size:.8rem;font-weight:700;padding:4px 8px;border-radius:8px;display:inline-flex;align-items:center;gap:4px;margin:2px}
+.dash-assoc-pair.bad{background:rgba(231,76,60,.06);color:#922b21}
+.dash-assoc-pair.good{background:rgba(46,204,113,.08);color:#1a5e2a}
+.dash-assoc-sep{font-weight:900;color:#e74c3c;font-size:.7rem}
+.dash-assoc-good-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 
 .action-section{margin-bottom:20px}
 .action-title{font-size:1.05rem;font-weight:900;padding:12px 16px;border-radius:12px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
@@ -236,9 +248,17 @@ nav{background:linear-gradient(135deg,#1a2e1a 0%,#2d4a2d 100%);color:#fff;displa
 .e-care-item{font-size:.7rem;font-weight:600;color:var(--text);display:flex;gap:5px;align-items:flex-start}
 .e-care-icon{flex-shrink:0;font-size:.74rem}
 
-.e-companions{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;font-size:.7rem;font-weight:700}
-.comp-good{color:#1a5e2a}
-.comp-bad{color:#922b21}
+/* ═══════ ASSOCIATIONS (ENCYCLOPEDIA) ═══════ */
+.e-assoc-section{margin-top:8px;border-top:1px solid rgba(26,46,26,.06);padding-top:8px}
+.e-assoc-title{font-size:.78rem;font-weight:800;margin-bottom:6px}
+.e-assoc-group{margin-bottom:6px}
+.e-assoc-label{font-size:.7rem;font-weight:800;margin-bottom:4px}
+.e-assoc-good .e-assoc-label{color:#1a5e2a}
+.e-assoc-bad .e-assoc-label{color:#922b21}
+.e-assoc-list{display:flex;flex-wrap:wrap;gap:4px}
+.e-assoc-chip{padding:3px 8px;border-radius:8px;font-size:.68rem;font-weight:700;display:inline-flex;align-items:center;gap:3px}
+.e-assoc-chip.good{background:rgba(46,204,113,.1);color:#1a5e2a}
+.e-assoc-chip.bad{background:rgba(231,76,60,.08);color:#922b21}
 
 .e-actions{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
 .e-no{grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:.95rem}
