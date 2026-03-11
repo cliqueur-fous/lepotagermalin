@@ -44,6 +44,21 @@ function renderDash() {
   document.getElementById('todayDate').textContent =
     `${dn[TODAY.getDay()]} ${TODAY.getDate()} ${MN[NOW]} ${TODAY.getFullYear()} ${ME[NOW]}`;
 
+  // Garden info bar
+  const gb = document.getElementById('gardenBar');
+  if (gb && gardenCode) {
+    const gname = localStorage.getItem('lpm-garden-name') || 'Mon jardin';
+    gb.innerHTML = `
+      <div class="gb-info">
+        <span class="gb-name">${gname}</span>
+        <span class="gb-code" onclick="copyGardenCode()" title="Cliquer pour copier">${gardenCode}</span>
+      </div>
+      <div class="gb-actions">
+        <button class="gb-btn" onclick="copyGardenCode()">Copier le code</button>
+        <button class="gb-btn gb-btn-danger" onclick="leaveGarden()">Quitter</button>
+      </div>`;
+  } else if (gb) { gb.innerHTML = ''; }
+
   const sel = PLANTS.filter(p => myG.includes(p.id));
   if (!sel.length) {
     c.innerHTML = `<div class="empty-state"><div class="big-emoji">🌱</div>

@@ -352,3 +352,29 @@ footer a:hover{text-decoration:underline}
 
 .muted{color:var(--muted);font-size:.82rem}
 .btn-full{width:100%;justify-content:center}
+
+/* ═══════ GARDEN SETUP SCREEN ═══════ */
+#gardenSetup{display:none;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:linear-gradient(135deg,#a8e6cf 0%,#dcedc1 40%,#f0f4e8 100%)}
+.gs-card{background:#fff;border-radius:24px;padding:40px 32px;max-width:420px;width:100%;box-shadow:var(--shadow-lg);text-align:center}
+.gs-icon{font-size:3.5rem;margin-bottom:8px}
+.gs-card h1{font-size:1.6rem;font-weight:900;margin-bottom:4px}
+.gs-sub{color:var(--muted);font-size:.88rem;margin-bottom:28px}
+.gs-section{margin-bottom:0}
+.gs-section h3{font-size:.92rem;font-weight:800;margin-bottom:10px;text-align:left}
+.gs-input{width:100%;padding:12px 16px;border:2px solid rgba(26,46,26,.12);border-radius:14px;font-family:inherit;font-weight:700;font-size:.9rem;outline:none;margin-bottom:10px;transition:border-color .2s}
+.gs-input:focus{border-color:var(--accent)}
+.gs-divider{display:flex;align-items:center;gap:12px;margin:24px 0;color:var(--muted);font-size:.8rem;font-weight:700}
+.gs-divider::before,.gs-divider::after{content:'';flex:1;height:1px;background:rgba(26,46,26,.1)}
+
+/* ═══════ GARDEN INFO BAR ═══════ */
+.garden-bar{background:#fff;border-radius:var(--radius);padding:12px 16px;box-shadow:var(--shadow);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.garden-bar:empty{display:none}
+.gb-info{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.gb-name{font-weight:800;font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gb-code{font-family:monospace;font-size:.85rem;font-weight:900;background:rgba(46,204,113,.1);color:var(--accent-dark);padding:4px 10px;border-radius:8px;letter-spacing:2px;cursor:pointer;transition:.2s;user-select:all}
+.gb-code:hover{background:rgba(46,204,113,.2)}
+.gb-actions{display:flex;gap:6px}
+.gb-btn{background:rgba(26,46,26,.05);border:none;padding:6px 12px;border-radius:10px;font-family:inherit;font-weight:700;font-size:.72rem;cursor:pointer;transition:.2s}
+.gb-btn:hover{background:rgba(26,46,26,.1)}
+.gb-btn-danger{color:var(--warn)}
+.gb-btn-danger:hover{background:rgba(231,76,60,.08)}

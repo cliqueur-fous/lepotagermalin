@@ -39,6 +39,7 @@ function plantById(id) {
 // ═══════ STATE ═══════
 let myG = JSON.parse(localStorage.getItem('lpm-garden') || '[]');
 let _syncTimer = null;
+let gardenCode = localStorage.getItem('lpm-code') || '';
 
 function save() {
   localStorage.setItem('lpm-garden', JSON.stringify(myG));
@@ -46,42 +47,150 @@ function save() {
   syncToServer();
 }
 
-// ═══════ CLOUD SYNC ═══════
+// ═══════ CLOUD SYNC (per-garden) ═══════
 function syncToServer() {
+  if (!gardenCode) return;
   clearTimeout(_syncTimer);
   _syncTimer = setTimeout(() => {
-    const journal = JSON.parse(localStorage.getItem('lpm-journal') || '[]');
-    const tasks = JSON.parse(localStorage.getItem('lpm-tasks') || '{}');
-    fetch('/api/data', {
+    const j = JSON.parse(localStorage.getItem('lpm-journal') || '[]');
+    const t = JSON.parse(localStorage.getItem('lpm-tasks') || '{}');
+    fetch(`/api/garden/${gardenCode}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ garden: myG, journal, tasks })
+      body: JSON.stringify({ garden: myG, journal: j, tasks: t })
     }).catch(() => {});
   }, 500);
 }
 
 function syncFromServer() {
-  return fetch('/api/data')
-    .then(r => r.json())
+  if (!gardenCode) return Promise.resolve();
+  return fetch(`/api/garden/${gardenCode}`)
+    .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
     .then(data => {
-      if (Array.isArray(data.garden) && data.garden.length) {
+      if (Array.isArray(data.garden)) {
         myG = data.garden;
         localStorage.setItem('lpm-garden', JSON.stringify(myG));
       }
-      if (Array.isArray(data.journal) && data.journal.length) {
-        // Merge: server wins if more entries
-        const local = JSON.parse(localStorage.getItem('lpm-journal') || '[]');
-        if (data.journal.length >= local.length) {
-          localStorage.setItem('lpm-journal', JSON.stringify(data.journal));
-          if (typeof journal !== 'undefined') journal = data.journal;
-        }
+      if (Array.isArray(data.journal)) {
+        localStorage.setItem('lpm-journal', JSON.stringify(data.journal));
+        if (typeof journal !== 'undefined') journal = data.journal;
       }
-      if (data.tasks && Object.keys(data.tasks).length) {
+      if (data.tasks && typeof data.tasks === 'object') {
         localStorage.setItem('lpm-tasks', JSON.stringify(data.tasks));
       }
       updCounts();
     })
     .catch(() => {});
+}
+
+// ═══════ GARDEN SETUP (create / join) ═══════
+function showGardenSetup() {
+  const main = document.getElementById('gardenSetup');
+  if (!main) return;
+  main.style.display = 'flex';
+  document.querySelector('nav').style.display = 'none';
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('selBar').style.display = 'none';
+  document.querySelector('footer').style.display = 'none';
+
+  main.innerHTML = `
+    <div class="gs-card">
+      <div class="gs-icon">🌱</div>
+      <h1>Le Potager Malin</h1>
+      <p class="gs-sub">Planifie ton potager a plusieurs, gratuitement</p>
+
+      <div class="gs-section">
+        <h3>Creer un nouveau jardin</h3>
+        <input type="text" id="gsName" class="gs-input" placeholder="Nom du jardin (ex: Potager de Gaetan)" maxlength="50">
+        <button class="btn btn-full" onclick="createGarden()">Creer mon jardin</button>
+      </div>
+
+      <div class="gs-divider"><span>ou</span></div>
+
+      <div class="gs-section">
+        <h3>Rejoindre un jardin existant</h3>
+        <input type="text" id="gsCode" class="gs-input" placeholder="Code du jardin (ex: A1B2C3)" maxlength="6" style="text-transform:uppercase;text-align:center;font-size:1.2rem;letter-spacing:4px">
+        <button class="btn btn-secondary btn-full" onclick="joinGarden()">Rejoindre</button>
+      </div>
+    </div>`;
+}
+
+function createGarden() {
+  const name = document.getElementById('gsName').value.trim() || 'Mon Potager';
+  fetch('/api/garden/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  })
+    .then(r => r.json())
+    .then(data => {
+      gardenCode = data.code;
+      localStorage.setItem('lpm-code', gardenCode);
+      localStorage.setItem('lpm-garden-name', data.name);
+      // Push current local data to the new garden
+      syncToServer();
+      hideGardenSetup();
+      showToast(`Jardin cree ! Code : ${gardenCode}`, 'success', 4000);
+    })
+    .catch(() => showToast('Erreur de connexion', 'warn'));
+}
+
+function joinGarden() {
+  const code = document.getElementById('gsCode').value.trim().toUpperCase();
+  if (!code || code.length < 4) { showToast('Entre un code valide', 'warn'); return; }
+
+  fetch(`/api/garden/${code}`)
+    .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
+    .then(data => {
+      gardenCode = code;
+      localStorage.setItem('lpm-code', code);
+      localStorage.setItem('lpm-garden-name', data.name || 'Jardin partage');
+      // Load server data
+      if (Array.isArray(data.garden)) {
+        myG = data.garden;
+        localStorage.setItem('lpm-garden', JSON.stringify(myG));
+      }
+      if (Array.isArray(data.journal)) {
+        localStorage.setItem('lpm-journal', JSON.stringify(data.journal));
+        if (typeof journal !== 'undefined') journal = data.journal;
+      }
+      if (data.tasks) localStorage.setItem('lpm-tasks', JSON.stringify(data.tasks));
+      hideGardenSetup();
+      showToast(`Connecte a "${data.name || 'Jardin'}" !`, 'success');
+    })
+    .catch(() => showToast('Jardin introuvable, verifie le code', 'warn'));
+}
+
+function hideGardenSetup() {
+  const s = document.getElementById('gardenSetup');
+  if (s) s.style.display = 'none';
+  document.querySelector('nav').style.display = '';
+  document.getElementById('selBar').style.display = '';
+  document.querySelector('footer').style.display = '';
+  updCounts();
+  goTo('dashboard');
+}
+
+function leaveGarden() {
+  if (!confirm('Quitter ce jardin ? Tu pourras le rejoindre a nouveau avec le code.')) return;
+  gardenCode = '';
+  localStorage.removeItem('lpm-code');
+  localStorage.removeItem('lpm-garden-name');
+  myG = [];
+  localStorage.setItem('lpm-garden', '[]');
+  localStorage.setItem('lpm-journal', '[]');
+  localStorage.setItem('lpm-tasks', '{}');
+  if (typeof journal !== 'undefined') journal = [];
+  showGardenSetup();
+}
+
+function copyGardenCode() {
+  if (!gardenCode) return;
+  navigator.clipboard.writeText(gardenCode).then(() => {
+    showToast('Code copie !', 'success');
+  }).catch(() => {
+    showToast(gardenCode, 'success', 4000);
+  });
 }
 
 function toggle(id) {
@@ -132,6 +241,15 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => goTo(tab.dataset.page));
   });
+
+  // Check if user has a garden
+  if (!gardenCode) {
+    showGardenSetup();
+    loadWeather();
+    registerSW();
+    return;
+  }
+
   // Load from server first, then render
   syncFromServer().then(() => {
     updCounts();
@@ -142,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Re-sync when user comes back to the tab
   document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) {
+    if (!document.hidden && gardenCode) {
       syncFromServer().then(() => {
         updCounts();
         if (currentPage === 'dashboard') renderDash();
