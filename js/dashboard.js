@@ -198,7 +198,7 @@ function renderStagesTracker(sel) {
       <div class="stage-plant-info">
         <span class="stage-emoji">${p.e}</span>
         <span class="stage-name">${p.n}</span>
-        ${rq ? `<span class="stage-qty" title="${rq.note}">📦 ${rq.qty} ${rq.unit}</span>` : ''}
+        ${rq ? `<span class="stage-qty" title="${rq.note} (pour 2 pers.)">${getInventoryQty(p.id)}/${rq.qty} ${rq.unit}</span>` : ''}
       </div>
       <div class="stage-steps">`;
 

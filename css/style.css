@@ -407,12 +407,16 @@ footer a:hover{text-decoration:underline}
 .stage-step.done{border-color:transparent;font-weight:800}
 
 /* ═══════ INVENTORY / SHOPPING LIST ═══════ */
-.inv-summary{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:18px}
+.inv-summary{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:18px;border:none}
+.inv-toggle{display:block;padding:16px;cursor:pointer;list-style:none;user-select:none}
+.inv-toggle::-webkit-details-marker{display:none}
 .inv-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .inv-header h3{font-size:1rem;font-weight:900;margin:0}
 .inv-count{font-size:.78rem;font-weight:800;color:var(--accent-dark)}
-.inv-bar{height:8px;background:rgba(26,46,26,.08);border-radius:4px;overflow:hidden;margin-bottom:12px}
+.inv-bar{height:8px;background:rgba(26,46,26,.08);border-radius:4px;overflow:hidden;margin-bottom:6px}
 .inv-bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width .4s ease}
+.inv-hint{font-size:.68rem;color:var(--muted);font-style:italic;font-weight:600}
+.inv-body{padding:0 16px 16px}
 .inv-missing{background:#fef9e7;border-radius:12px;padding:12px}
 .inv-missing-title{font-weight:800;font-size:.85rem;color:#7d6608;margin-bottom:8px}
 .inv-missing-list{display:flex;flex-direction:column;gap:4px}

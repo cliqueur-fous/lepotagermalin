@@ -16,7 +16,7 @@ function renderSel() {
     ${myG.length ? `<button class="btn btn-danger" onclick="clearAll()">🗑️ Tout vider</button>` : ''}
   </div>`;
 
-  // Inventory summary with real quantities
+  // Inventory summary
   if (myG.length) {
     const selPlants = myG.map(id => plantById(id)).filter(Boolean);
     const itemsWithRec = selPlants.filter(p => RECOMMENDED_QTY[p.id]);
@@ -34,20 +34,24 @@ function renderSel() {
       ? Math.round((itemsWithRec.length - toBuy.length) / itemsWithRec.length * 100)
       : 0;
 
-    h += `<div class="inv-summary">
-      <div class="inv-header">
-        <h3>🌰 Inventaire graines & plants</h3>
-        <span class="inv-count">${completePct}% complet</span>
-      </div>
-      <div class="inv-bar"><div class="inv-bar-fill" style="width:${completePct}%"></div></div>`;
+    h += `<details class="inv-summary" ${toBuy.length ? 'open' : ''}>
+      <summary class="inv-toggle">
+        <div class="inv-header">
+          <h3>🌰 Inventaire & liste de courses</h3>
+          <span class="inv-count">${completePct}% complet</span>
+        </div>
+        <div class="inv-bar"><div class="inv-bar-fill" style="width:${completePct}%"></div></div>
+        <span class="inv-hint">Quantités recommandées pour 2 personnes (sources : Rustica, Vilmorin)</span>
+      </summary>
+      <div class="inv-body">`;
 
     if (toBuy.length) {
       h += `<div class="inv-missing">
-        <div class="inv-missing-title">🛒 Liste de courses — ${toBuy.length} à compléter :</div>
+        <div class="inv-missing-title">🛒 ${toBuy.length} plante${toBuy.length > 1 ? 's' : ''} à compléter</div>
         <div class="inv-missing-list">${toBuy.map(({ p, rec, owned, missing }) => {
           return `<div class="inv-missing-item">
             <span>${p.e} ${p.n}</span>
-            <span class="inv-missing-qty">${missing} ${rec.unit}${owned > 0 ? ` (${owned}/${rec.qty} en stock)` : ''}</span>
+            <span class="inv-missing-qty">${missing} ${rec.unit}${owned > 0 ? ` (${owned}/${rec.qty})` : ''}</span>
             <button class="inv-check-btn" onclick="event.stopPropagation();setInventoryQty('${p.id}',${rec.qty});renderSel()" title="J'ai tout !">✅</button>
           </div>`;
         }).join('')}</div>
@@ -56,9 +60,10 @@ function renderSel() {
       h += `<div class="inv-complete">✅ Tu as tout en stock !</div>`;
     }
 
-    h += `</div>`;
+    h += `</div></details>`;
   }
 
+  // Plant grid — simplified cards, inventory only on selected
   cats.forEach(cat => {
     const selCount = cat.items.filter(p => myG.includes(p.id)).length;
     h += `<div class="cat-section">
@@ -75,14 +80,13 @@ function renderSel() {
           <div class="p-emoji">${p.e}</div>
           <div class="p-name">${sel ? '✅ ' : ''}${p.n}</div>
           <div class="p-diff ${p.d}">${DL[p.d]}</div>
-          ${rq ? `<div class="p-qty">📦 ${rq.qty} ${rq.unit}</div>` : ''}
           ${acts.length ? `<div class="p-status">${acts.join(' ')} actif</div>` : ''}
           ${sel && rq ? `<div class="p-inv-control" onclick="event.stopPropagation()">
             <button class="inv-btn" onclick="invAdjust('${p.id}',-1)">−</button>
             <input type="number" class="inv-qty-input" value="${owned}" min="0"
               onchange="setInventoryQty('${p.id}',this.value);renderSel()"
               onclick="this.select()">
-            <span class="inv-qty-unit">/ ${rq.qty}</span>
+            <span class="inv-qty-unit">/ ${rq.qty} ${rq.unit}</span>
             <button class="inv-btn" onclick="invAdjust('${p.id}',1)">+</button>
           </div>` : ''}
         </div>`;

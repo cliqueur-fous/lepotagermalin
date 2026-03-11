@@ -44,7 +44,8 @@ function renderEnc() {
   const g = document.getElementById('eGrid');
   let f = [...PLANTS];
 
-  if (eF.cat !== 'all') f = f.filter(p => p.c === eF.cat);
+  if (eF.cat === 'mine') f = f.filter(p => myG.includes(p.id));
+  else if (eF.cat !== 'all') f = f.filter(p => p.c === eF.cat);
   if (eF.acts.length) {
     f = f.filter(p => eF.acts.some(a => {
       if (a === 'sow') return inR(p.sow, NOW_H);
@@ -82,6 +83,8 @@ function renderEnc() {
     const goodNames = comp.good.map(id => plantById(id)).filter(Boolean).map(x => x.e).join(' ');
     const badNames = comp.bad.map(id => plantById(id)).filter(Boolean).map(x => x.e).join(' ');
 
+    const rq = RECOMMENDED_QTY[p.id];
+
     return `<div class="e-card ${ig ? 'in-garden' : ''}">
       <button class="e-add ${ig ? 'added' : ''}" onclick="toggle('${p.id}');renderEnc()">
         ${ig ? '✅ Potager' : '➕ Ajouter'}</button>
@@ -89,20 +92,20 @@ function renderEnc() {
         <span class="e-emoji">${p.e}</span>
         <div>
           <div class="e-name">${p.n} <span class="e-diff ${p.d}">${DL[p.d]}</span></div>
-          <div class="e-cat">${p.c} · ${p.spacing}cm · ${p.perM2}/m² ${p.serre ? '· 🏠 serre OK' : ''}</div>
+          <div class="e-cat">${p.c} · ${p.spacing}cm entre plants · ${p.perM2}/m²${p.serre ? ' · 🏠 serre' : ''}${rq ? ` · ${rq.qty} ${rq.unit} pour 2 pers.` : ''}</div>
         </div>
       </div>
       <div class="e-tip">💡 ${p.t}</div>
-      ${encCareBlock(p)}
-      ${p.sow.length ? `<div class="hbar-section"><div class="hbar-label">🌰 Semis</div>${hbar(p.sow, 'sow')}</div>` : ''}
-      ${p.plant.length ? `<div class="hbar-section"><div class="hbar-label">🌱 Plantation</div>${hbar(p.plant, 'plant')}</div>` : ''}
-      ${p.harvest.length ? `<div class="hbar-section"><div class="hbar-label">🧺 Récolte</div>${hbar(p.harvest, 'harvest')}</div>` : ''}
-      ${monthLabels()}
-      <div class="e-companions">
-        ${goodNames ? `<span class="comp-good" title="Bonnes associations">👍 ${goodNames}</span>` : ''}
-        ${badNames ? `<span class="comp-bad" title="Mauvaises associations">👎 ${badNames}</span>` : ''}
-      </div>
       <div class="e-actions">${actionTags(p)}</div>
+      ${miniBar24(p)}
+      ${encCareBlock(p)}
+      ${comp.good.length || comp.bad.length ? `<details class="e-care-details">
+        <summary class="e-care-toggle">🤝 Associations</summary>
+        <div class="e-companions">
+          ${goodNames ? `<span class="comp-good">👍 ${goodNames}</span>` : ''}
+          ${badNames ? `<span class="comp-bad">👎 ${badNames}</span>` : ''}
+        </div>
+      </details>` : ''}
     </div>`;
   }).join('');
 }
