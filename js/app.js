@@ -46,8 +46,14 @@ function save() {
 
 function toggle(id) {
   const i = myG.indexOf(id);
-  if (i === -1) myG.push(id);
-  else myG.splice(i, 1);
+  const p = plantById(id);
+  if (i === -1) {
+    myG.push(id);
+    if (p) showToast(`${p.e} ${p.n} ajouté !`, 'success');
+  } else {
+    myG.splice(i, 1);
+    if (p) showToast(`${p.e} ${p.n} retiré`);
+  }
   save();
 }
 
@@ -76,7 +82,6 @@ function goTo(pg) {
     case 'selection': renderSel(); break;
     case 'calendar': renderCal(); break;
     case 'encyclo': renderEnc(); break;
-    case 'planner': renderPlanner(); break;
     case 'journal': renderJournal(); break;
   }
 
@@ -92,6 +97,24 @@ document.addEventListener('DOMContentLoaded', () => {
   loadWeather();
   registerSW();
 });
+
+// ═══════ TOAST NOTIFICATIONS ═══════
+function showToast(msg, type = '', duration = 2200) {
+  let container = document.querySelector('.toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(() => {
+    t.classList.add('out');
+    setTimeout(() => t.remove(), 300);
+  }, duration);
+}
 
 // ═══════ PWA — SERVICE WORKER ═══════
 function registerSW() {
@@ -183,84 +206,6 @@ function weatherIcon(code) {
   if (code <= 82) return '⛈️';
   if (code <= 86) return '🌨️';
   return '⛈️';
-}
-
-// ═══════ EXPORT PLAN ═══════
-function exportPlan() {
-  const plot = document.getElementById('plPlot');
-  if (!plot) return;
-
-  // Use canvas to capture
-  const rect = plot.getBoundingClientRect();
-  const canvas = document.createElement('canvas');
-  const scale = 2;
-  canvas.width = rect.width * scale;
-  canvas.height = rect.height * scale;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(scale, scale);
-
-  // Draw background
-  ctx.fillStyle = '#e8f5e9';
-  ctx.fillRect(0, 0, rect.width, rect.height);
-
-  // Draw grid
-  ctx.strokeStyle = 'rgba(0,0,0,0.06)';
-  ctx.lineWidth = 0.5;
-  const cellW = rect.width / gridCols;
-  const cellH = rect.height / gridRows;
-  for (let i = 0; i <= gridCols; i++) {
-    ctx.beginPath(); ctx.moveTo(i * cellW, 0); ctx.lineTo(i * cellW, rect.height); ctx.stroke();
-  }
-  for (let i = 0; i <= gridRows; i++) {
-    ctx.beginPath(); ctx.moveTo(0, i * cellH); ctx.lineTo(rect.width, i * cellH); ctx.stroke();
-  }
-
-  // Draw zones
-  (pl.zones || []).forEach(z => {
-    const zt = typeof ZONE_TYPES !== 'undefined' ? ZONE_TYPES[z.type] : null;
-    const zx = z.c1 * cellW, zy = z.r1 * cellH;
-    const zw = (z.c2 - z.c1 + 1) * cellW, zh = (z.r2 - z.r1 + 1) * cellH;
-    ctx.fillStyle = zt ? zt.bg : 'rgba(255,235,59,0.2)';
-    ctx.fillRect(zx, zy, zw, zh);
-    ctx.strokeStyle = zt ? zt.border.replace(/2px (solid|dashed) /, '') : '#f9a825';
-    ctx.lineWidth = 2;
-    if (z.type === 'serre') ctx.setLineDash([6, 3]);
-    else ctx.setLineDash([]);
-    ctx.strokeRect(zx, zy, zw, zh);
-    ctx.setLineDash([]);
-    ctx.fillStyle = zt ? zt.color : '#f57f17';
-    ctx.font = 'bold 11px Nunito, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`${zt ? zt.emoji + ' ' + zt.label : '🏠 Serre'}`, zx + zw / 2, zy + zh / 2 + 4);
-  });
-
-  // Draw plants
-  pl.placements.forEach(p => {
-    const plant = plantById(p.id);
-    if (!plant) return;
-    const x = (p.col + 0.5) * cellW;
-    const y = (p.row + 0.5) * cellH;
-    ctx.font = '12px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(plant.e, x, y);
-  });
-
-  // Title
-  ctx.fillStyle = '#2d3436';
-  ctx.font = 'bold 14px Nunito, sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText(`Le Potager Malin — ${pl.width}m × ${pl.length}m`, 8, 16);
-
-  // Download
-  canvas.toBlob(blob => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `potager-${pl.width}x${pl.length}m.png`;
-    a.click();
-    URL.revokeObjectURL(url);
-  });
 }
 
 // ═══════ SHARED RENDER HELPERS ═══════

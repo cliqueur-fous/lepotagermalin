@@ -88,7 +88,7 @@ function renderDash() {
     h += `<div class="dash-alerts">
       <div class="alert-title">⚠️ Attention aux associations</div>
       ${alerts.map(a => `<div class="alert-item">❌ ${a} — à éloigner</div>`).join('')}
-      <div class="alert-link" onclick="goTo('planner')">→ Voir le planificateur</div>
+      <div class="alert-link" onclick="goTo('encyclo')">→ Voir les associations</div>
     </div>`;
   }
 

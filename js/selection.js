@@ -44,6 +44,7 @@ function selPop() {
   ['tomate','salade','carotte','courgette','radis','haricot','basilic','persil','fraise','pdt','oignon','menthe']
     .forEach(id => { if (!myG.includes(id)) myG.push(id); });
   save(); renderSel();
+  showToast('Sélection express ajoutée !', 'success');
 }
 
 function selAll() {
@@ -51,4 +52,8 @@ function selAll() {
   save(); renderSel();
 }
 
-function clearAll() { myG = []; save(); renderSel(); }
+function clearAll() {
+  if (!confirm('Vider tout ton potager ?')) return;
+  myG = []; save(); renderSel();
+  showToast('Potager vidé', 'warn');
+}

@@ -132,6 +132,7 @@ function addJournalEntry() {
   });
 
   saveJournal();
+  showToast('Entrée ajoutée !', 'success');
   renderJournal();
 }
 
