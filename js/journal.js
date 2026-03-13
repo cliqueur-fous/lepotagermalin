@@ -86,8 +86,15 @@ function renderJournal() {
       <div class="j-form-row">
         <label>Photo</label>
         <div class="j-photo-input">
-          <input type="file" id="jPhoto" accept="image/*" capture="environment" onchange="previewJPhoto(this)">
-          <label for="jPhoto" class="j-photo-btn">📷 Ajouter une photo</label>
+          <input type="file" id="jPhoto" accept="image/*" style="display:none" onchange="previewJPhoto(this)">
+          <input type="file" id="jPhotoCam" accept="image/*" capture="environment" style="display:none" onchange="document.getElementById('jPhoto').files=this.files;previewJPhoto(this)">
+          <div class="j-photo-btns j-photo-mobile">
+            <button type="button" class="j-photo-btn" onclick="document.getElementById('jPhotoCam').click()">📸 Prendre une photo</button>
+            <button type="button" class="j-photo-btn" onclick="document.getElementById('jPhoto').click()">🖼️ Galerie</button>
+          </div>
+          <div class="j-photo-btns j-photo-desktop">
+            <button type="button" class="j-photo-btn" onclick="document.getElementById('jPhoto').click()">📷 Ajouter une photo</button>
+          </div>
           <div id="jPhotoPreview" class="j-photo-preview"></div>
         </div>
       </div>
